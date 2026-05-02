@@ -1,0 +1,47 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  OshiUI — .gitignore                                           ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+# ── Xcode ──────────────────────────────────────────────────────────
+build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+xcuserdata/
+
+# ── Swift Package Manager ─────────────────────────────────────────
+.build/
+.swiftpm/
+Package.resolved
+Packages/
+
+# ── CocoaPods ──────────────────────────────────────────────────────
+Pods/
+
+# ── macOS ──────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ── IDE ────────────────────────────────────────────────────────────
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# ── Fastlane ───────────────────────────────────────────────────────
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# ── Archives & Artifacts ──────────────────────────────────────────
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+*.xcframework.zip
