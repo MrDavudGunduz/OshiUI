@@ -30,16 +30,39 @@
 
 **OshiUI** is a modular, production-grade UI framework that transforms flat SwiftUI interfaces into immersive, physics-aware experiences. Built with Swift 6 strict concurrency, it ships as 8 independently adoptable modules — from atomic design tokens to volumetric visionOS controls.
 
+### Quick Start
+
 ```swift
 import OshiUI
 
 struct ContentView: View {
     var body: some View {
-        OshiButton("Launch", style: .kineticImpact) {
-            // Spring physics + haptic feedback, zero config
+        VStack(spacing: OshiSpacing.lg) {
+            // Neon-glowing glassmorphism card
+            OshiLayeredCard(depth: .deep, accentColor: .oshiCyan) {
+                VStack(spacing: OshiSpacing.md) {
+                    Text("Welcome to OshiUI")
+                        .font(OshiTypography.title2)
+                        .foregroundStyle(OshiColor.textPrimary)
+
+                    Text("Physics-driven. Neon-lit. Spatial-ready.")
+                        .font(OshiTypography.callout)
+                        .foregroundStyle(OshiColor.textSecondary)
+                }
+                .padding(OshiSpacing.xl)
+            }
+
+            // Volumetric 3D button with spring physics
+            OshiVolumetricButton("Get Started") {
+                // Action with built-in depth animation
+            }
+
+            // Kinetic progress bar with haptic momentum
+            OshiProgressBar(value: 0.75, style: .kinetic)
+                .oshiProgressGlow(OshiColor.neonLime)
         }
-        .oshiGlassmorphism()
-        .oshiNeonGlow(.cyan)
+        .padding(OshiSpacing.xl)
+        .background(OshiColor.surfaceDeep)
     }
 }
 ```
@@ -50,18 +73,18 @@ struct ContentView: View {
 
 OshiUI is organized into 8 focused modules. Import only what you need, or use the umbrella `OshiUI` product for everything.
 
-| Module | Description | Phase |
-|--------|-------------|-------|
-| **`OshiUICore`** | Atomic design tokens — colors, typography, spacing with neon glow engine | 1 |
-| **`OshiUISpatial`** | Glassmorphism, 3D layered cards, volumetric depth effects | 2 |
-| **`OshiUIKinetic`** | Spring physics, haptic feedback, morphing flow animations | 2 |
-| **`OshiUINoir`** | High-contrast cyberpunk components, futuristic toast notifications | 3 |
-| **`OshiUIHUD`** | Kinetic progress bars, glowing achievement badges, radar charts | 3 |
-| **`OshiUIHolographic`** | RealityKit bridge, spatial drag-and-drop, volumetric panels | 4 |
-| **`OshiUISynapse`** | Streaming text renderer, particle "thinking" animations for LLMs | 4 |
-| **`OshiUICanvas`** | Magnetic snap grids, resizable modular widget areas | 5 |
+| Module | Description | Key Components | Phase |
+|--------|-------------|----------------|-------|
+| **`OshiUICore`** | Atomic design tokens — colors, typography, spacing, neon glow engine | `OshiColor`, `OshiTypography`, `OshiSpacing`, `OshiPlatform` | 1 |
+| **`OshiUISpatial`** | Glassmorphism, 3D layered cards, volumetric depth effects | `GlassmorphismModifier`, `OshiLayeredCard`, `OshiVolumetricButton` | 2 |
+| **`OshiUIKinetic`** | Spring physics, haptic feedback, morphing flow animations | `KineticImpactButtonStyle`, `OshiMorphView`, `OshiHapticEngine` | 2 |
+| **`OshiUINoir`** | High-contrast cyberpunk components, futuristic toast notifications | `OshiNoirCard`, `OshiToast`, `OshiNoirDivider` | 3 |
+| **`OshiUIHUD`** | Kinetic progress bars, glowing achievement badges, radar charts | `OshiProgressBar`, `OshiAchievementBadge`, `OshiRadarChart` | 3 |
+| **`OshiUIHolographic`** | Spatial parallax canvas, volumetric floating panels | `OshiHolographicCanvas`, `OshiVolumetricPanel` | 4 |
+| **`OshiUISynapse`** | Streaming text renderer, particle "thinking" animations, chat UI | `OshiStreamingText`, `OshiThinkingParticles`, `OshiChatView` | 4 |
+| **`OshiUICanvas`** | Grid layouts with snap alignment, resizable modular widgets | `OshiSnapGrid`, `OshiResizableWidget` | 5 |
 
-### Dependency Graph
+### Module Dependency Graph
 
 ```
                     ┌─────────────┐
@@ -80,6 +103,8 @@ OshiUI is organized into 8 focused modules. Import only what you need, or use th
                     └───────────┘
 ```
 
+> **Tip:** Import `OshiUICore` alone for zero transitive dependencies, or progressively adopt higher modules as needed.
+
 ---
 
 ## Installation
@@ -90,7 +115,7 @@ Add OshiUI to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/davudgunduz/OshiUI.git", from: "1.0.0")
+    .package(url: "https://github.com/MrDavudGunduz/OshiUI.git", from: "1.0.0")
 ]
 ```
 
@@ -111,8 +136,71 @@ Then add the desired module to your target:
 ### Xcode
 
 1. **File → Add Package Dependencies…**
-2. Enter `https://github.com/davudgunduz/OshiUI.git`
+2. Enter `https://github.com/MrDavudGunduz/OshiUI.git`
 3. Select the modules you need
+
+---
+
+## Feature Highlights
+
+### 🎨 Neon Color Engine
+
+```swift
+// Curated neon palette with gradient factories
+Text("Neon Title")
+    .foregroundStyle(OshiColor.neonCyan)
+    .oshiNeonGlow(.oshiCyan, radius: 12)
+
+RoundedRectangle(cornerRadius: 12)
+    .fill(OshiColor.gradient(.neonCyan, .neonMagenta))
+```
+
+### 🧊 Glassmorphism
+
+```swift
+// Frosted glass with automatic accessibility fallback
+content
+    .oshiGlassmorphism(blur: 25, tint: .blue.opacity(0.1))
+```
+
+### ⚡ Spring Physics & Haptics
+
+```swift
+// Buttons that physically push back
+Button("Save") { save() }
+    .buttonStyle(.kineticImpact(intensity: .heavy, accentColor: .oshiLime))
+
+// Organic morph transitions
+OshiMorphView(isExpanded: $isOpen, spring: .bouncy) {
+    CompactView()
+} expanded: {
+    DetailView()
+}
+```
+
+### 🏆 Gamification HUD
+
+```swift
+// Animated radar chart
+OshiRadarChart(
+    data: [0.8, 0.6, 0.9, 0.5, 0.7],
+    axes: ["ATK", "DEF", "SPD", "INT", "LCK"]
+)
+
+// Achievement badges with tier-based glow
+OshiAchievementBadge(title: "Champion", tier: .gold, isUnlocked: true)
+```
+
+### 🤖 AI/LLM Interfaces
+
+```swift
+// High-performance streaming text (120+ tokens/sec at 60fps)
+OshiStreamingText(text: viewModel.streamedText)
+    .oshiStreamCursor(.pulse)
+
+// Neural thinking particles
+OshiThinkingParticles(style: .neural, color: OshiColor.neonCyan)
+```
 
 ---
 
@@ -135,6 +223,7 @@ Then add the desired module to your target:
 3. **Swift 6 Concurrency** — Strict `Sendable` compliance across all public API surfaces.
 4. **Platform Adaptive** — Automatic behavior adaptation across iOS, macOS, and visionOS via compile-time platform abstractions.
 5. **Zero-Configuration Defaults** — Every component works beautifully out of the box while remaining deeply customizable.
+6. **Accessibility-First** — All components include VoiceOver labels, traits, and dynamic type support. `Reduce Transparency` is respected automatically.
 
 ---
 
@@ -152,6 +241,23 @@ Each module includes:
 - Architecture articles explaining design decisions
 - SwiftUI Preview catalog for visual exploration
 
+Available DocC articles:
+- [Getting Started with OshiUICore](Sources/OshiUICore/OshiUICore.docc/GettingStartedWithCore.md)
+- [Design Token Guide](Sources/OshiUICore/OshiUICore.docc/DesignTokenGuide.md)
+
+---
+
+## Project Status
+
+| Phase | Modules | Status |
+|-------|---------|--------|
+| **Phase 1: Foundation** | OshiUICore | ✅ Complete |
+| **Phase 2: Depth & Physics** | OshiUISpatial, OshiUIKinetic | ✅ Complete |
+| **Phase 3: Identity & Gamification** | OshiUINoir, OshiUIHUD | ✅ Complete |
+| **Phase 4: Spatial & AI** | OshiUIHolographic, OshiUISynapse | ✅ Complete |
+| **Phase 5: Flexible Workspaces** | OshiUICanvas | ✅ Complete |
+| **Phase 6: Polish & Release** | Testing, Docs, CI/CD | 🔄 In Progress |
+
 ---
 
 ## Contributing
@@ -167,6 +273,6 @@ OshiUI is released under the **MIT License**. See [LICENSE](LICENSE) for details
 ---
 
 <p align="center">
-  <sub>Built with ♥ by <a href="https://github.com/davudgunduz">Davud Gunduz</a></sub><br/>
+  <sub>Built with ♥ by <a href="https://github.com/MrDavudGunduz">Davud Gunduz</a></sub><br/>
   <sub>推し — Because your UI deserves to be someone's favorite.</sub>
 </p>
