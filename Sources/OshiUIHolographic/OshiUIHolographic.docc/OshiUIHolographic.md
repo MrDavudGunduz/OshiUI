@@ -1,6 +1,6 @@
 # ``OshiUIHolographic``
 
-Spatial simulations bridging RealityKit and SwiftUI for volumetric experiences.
+Spatial simulations and volumetric experiences for SwiftUI interfaces.
 
 @Metadata {
     @DisplayName("OshiUI Holographic")
@@ -9,14 +9,29 @@ Spatial simulations bridging RealityKit and SwiftUI for volumetric experiences.
 
 ## Overview
 
-`OshiUIHolographic` makes volumetric visionOS controls and RealityKit 3D canvases as simple as standard SwiftUI views. On non-visionOS platforms, components degrade gracefully to 2.5D representations.
+`OshiUIHolographic` transforms your UI into a volumetric experience with parallax-driven 3D effects and floating control panels.
+
+On visionOS, components leverage native spatial rendering. On iOS and macOS, they degrade gracefully to 2.5D parallax representations using hover and gyroscope input.
 
 ```swift
 import OshiUIHolographic
 
+// 3D parallax canvas with hover-driven rotation
 OshiHolographicCanvas {
-    OshiModel3D(named: "spacecraft")
-        .oshiRotation(.degrees(45), axis: .y)
+    VStack {
+        Image(systemName: "globe")
+            .font(.system(size: 60))
+            .foregroundStyle(OshiColor.neonCyan)
+        Text("HOLOGRAPHIC")
+            .font(OshiTypography.title2)
+    }
+}
+.frame(height: 300)
+
+// Floating glass control panel
+OshiVolumetricPanel {
+    Toggle("Shields", isOn: $shieldsActive)
+    Slider(value: $power, in: 0...100)
 }
 ```
 
@@ -25,12 +40,7 @@ OshiHolographicCanvas {
 ### 3D Content
 
 - ``OshiHolographicCanvas``
-- ``OshiModel3D``
 
-### Spatial Interaction
-
-- ``OshiSpatialDropZone``
-
-### visionOS
+### Panels
 
 - ``OshiVolumetricPanel``

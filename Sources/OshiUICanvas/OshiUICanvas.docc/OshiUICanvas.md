@@ -1,6 +1,6 @@
 # ``OshiUICanvas``
 
-User-controlled customizable workspaces with magnetic snap alignment.
+User-controlled customizable workspaces with grid alignment and resizable widgets.
 
 @Metadata {
     @DisplayName("OshiUI Canvas")
@@ -9,19 +9,23 @@ User-controlled customizable workspaces with magnetic snap alignment.
 
 ## Overview
 
-`OshiUICanvas` puts layout control in the user's hands. Components snap to invisible grids like magnets, widgets resize fluidly, and workspace configurations persist across sessions.
+`OshiUICanvas` puts layout control in the user's hands. Components are arranged in flexible grid layouts with configurable columns and spacing, while widgets resize fluidly via drag handles within min/max constraints.
 
 ```swift
 import OshiUICanvas
 
-OshiSnapGrid(columns: 4, spacing: 12) { proxy in
+// Grid layout with configurable columns
+OshiSnapGrid(columns: 4, spacing: 12) {
     ForEach(widgets) { widget in
-        OshiResizableWidget(minSize: .small) {
+        OshiResizableWidget(minSize: .small, maxSize: .large) {
             widget.content
         }
-        .oshiSnap(to: proxy)
     }
 }
+
+// Snap-point calculation for custom layouts
+let proxy = OshiSnapGridProxy(columns: 4, spacing: 10, gridWidth: 400)
+let snapped = proxy.snap(dragLocation)
 ```
 
 ## Topics
