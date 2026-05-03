@@ -1,0 +1,71 @@
+name: OshiUI CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "iOS 18 — iPhone 16 Pro"
+            destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0"
+          - name: "macOS 15 — Native"
+            destination: "platform=macOS"
+          - name: "visionOS 2 — Apple Vision Pro"
+            destination: "platform=visionOS Simulator,name=Apple Vision Pro,OS=2.0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Latest Xcode
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using Xcode at: $XCODE_PATH"
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          xcodebuild -version
+
+      - name: Resolve Dependencies
+        run: swift package resolve
+
+      - name: Build
+        run: |
+          swift build \
+            --configuration debug \
+            2>&1 | tee build.log
+
+      - name: Test
+        run: |
+          swift test \
+            --configuration debug \
+            2>&1 | tee test.log
+
+      - name: Upload Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.name }}
+          path: |
+            build.log
+            test.log
+
+  swiftlint:
+    name: SwiftLint
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SwiftLint
+        run: |
+          brew install swiftlint
+          swiftlint lint --strict --reporter github-actions-logging
