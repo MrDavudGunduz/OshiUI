@@ -14,6 +14,7 @@ struct OshiUIHolographicModuleTests {
     @Test("Module version is valid semantic version")
     func moduleVersionFormat() {
         let version = OshiUIHolographic.version
-        #expect(!version.isEmpty)
+        #expect(!version.isEmpty, "Module version must not be empty")
+        #expect(version.contains("."), "Module version must follow semver format")
     }
 }
