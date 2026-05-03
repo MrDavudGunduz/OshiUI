@@ -46,6 +46,8 @@
 /// ### Platform
 /// - ``OshiPlatform``
 
+import SwiftUI
+
 // MARK: - Module Namespace
 
 /// The `OshiUICore` namespace.
