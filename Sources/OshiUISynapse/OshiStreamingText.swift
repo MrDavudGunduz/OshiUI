@@ -36,15 +36,16 @@ public struct OshiStreamingText: View {
     /// The cursor style passed via initializer (fallback).
     private let initCursorStyle: OshiStreamCursorStyle
 
-    /// Environment-driven cursor style (takes precedence over init).
-    @Environment(\.oshiStreamCursorStyle)
-    private var envCursorStyle
+    /// Environment-driven cursor style override.
+    @Environment(\.oshiStreamCursorStyleOverride)
+    private var envCursorOverride
 
     @State private var cursorVisible = true
 
-    /// The resolved cursor style — environment wins over init.
+    /// The resolved cursor style — explicit environment override wins,
+    /// otherwise falls back to the initializer value.
     private var cursorStyle: OshiStreamCursorStyle {
-        envCursorStyle
+        envCursorOverride ?? initCursorStyle
     }
 
     /// Creates a streaming text view.
@@ -107,7 +108,7 @@ public struct OshiStreamingText: View {
                 )
                 .onAppear { cursorVisible.toggle() }
 
-        case .none:
+        case .hidden:
             EmptyView()
         }
     }
@@ -122,7 +123,14 @@ public enum OshiStreamCursorStyle: String, Sendable {
     /// A block cursor with fading animation.
     case block
     /// No visible cursor.
-    case none
+    case hidden
+
+    /// No visible cursor.
+    ///
+    /// - Note: Renamed to ``hidden`` to avoid shadowing `Optional.none`.
+    @available(*, deprecated, renamed: "hidden",
+               message: "Use .hidden to avoid ambiguity with Optional.none.")
+    public static let none: OshiStreamCursorStyle = .hidden
 }
 
 // MARK: - Cursor Modifier
@@ -136,7 +144,7 @@ extension View {
     /// - Parameter style: The cursor style to apply.
     /// - Returns: The modified view with the cursor style set in the environment.
     public func oshiStreamCursor(_ style: OshiStreamCursorStyle) -> some View {
-        environment(\.oshiStreamCursorStyle, style)
+        environment(\.oshiStreamCursorStyleOverride, style)
     }
 }
 
@@ -144,8 +152,9 @@ extension View {
 
 extension EnvironmentValues {
 
-    /// The current stream cursor style.
-    @Entry public var oshiStreamCursorStyle: OshiStreamCursorStyle = .pulse
+    /// Optional cursor style override set via `.oshiStreamCursor()` modifier.
+    /// When `nil`, the init-time default is used.
+    @Entry public var oshiStreamCursorStyleOverride: OshiStreamCursorStyle? = nil
 }
 
 // MARK: - Previews

@@ -29,7 +29,11 @@ public struct OshiThinkingParticles: View {
     /// The accent color for the particles.
     public let color: Color
 
-    @State private var phase: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
+    @State private var staticPulse = false
+    @State private var isActive = true
 
     /// Creates a thinking particle animation.
     ///
@@ -45,7 +49,36 @@ public struct OshiThinkingParticles: View {
     }
 
     public var body: some View {
-        TimelineView(.animation) { timeline in
+        if reduceMotion {
+            reducedMotionView
+        } else {
+            particleCanvas
+        }
+    }
+
+    // MARK: - Reduced Motion Fallback
+
+    /// A static pulsing indicator shown when Reduce Motion is enabled.
+    @ViewBuilder
+    private var reducedMotionView: some View {
+        Circle()
+            .fill(color)
+            .frame(width: 12, height: 12)
+            .opacity(staticPulse ? 1.0 : 0.4)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                    staticPulse = true
+                }
+            }
+            .accessibilityLabel("Processing")
+            .accessibilityAddTraits(.updatesFrequently)
+    }
+
+    // MARK: - Particle Canvas
+
+    @ViewBuilder
+    private var particleCanvas: some View {
+        TimelineView(.animation(paused: !isActive)) { timeline in
             Canvas { context, size in
                 let time = timeline.date.timeIntervalSinceReferenceDate
                 let center = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -78,6 +111,8 @@ public struct OshiThinkingParticles: View {
                 }
             }
         }
+        .onAppear { isActive = true }
+        .onDisappear { isActive = false }
         .accessibilityLabel("Processing")
         .accessibilityAddTraits(.updatesFrequently)
     }

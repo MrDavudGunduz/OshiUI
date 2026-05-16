@@ -24,10 +24,11 @@ public struct OshiChatView: View {
     public let messages: [OshiChatMessage]
 
     /// Callback when the user sends a message.
-    public let onSend: (String) async -> Void
+    public let onSend: @MainActor @Sendable (String) async -> Void
 
     @State private var inputText = ""
     @State private var isSending = false
+    @State private var sendTask: Task<Void, Never>?
 
     /// Creates a chat view.
     ///
@@ -36,7 +37,7 @@ public struct OshiChatView: View {
     ///   - onSend: Async callback invoked when the user sends a message.
     public init(
         messages: [OshiChatMessage],
-        onSend: @escaping (String) async -> Void
+        onSend: @escaping @MainActor @Sendable (String) async -> Void
     ) {
         self.messages = messages
         self.onSend = onSend
@@ -45,18 +46,31 @@ public struct OshiChatView: View {
     public var body: some View {
         VStack(spacing: 0) {
             // Message list
-            ScrollView {
-                LazyVStack(spacing: OshiSpacing.md) {
-                    ForEach(messages) { message in
-                        messageBubble(message)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(spacing: OshiSpacing.md) {
+                        ForEach(messages) { message in
+                            messageBubble(message)
+                                .id(message.id)
+                        }
+                    }
+                    .padding(OshiSpacing.lg)
+                }
+                .defaultScrollAnchor(.bottom)
+                .onChange(of: messages.last?.id) { _, newID in
+                    guard let newID else { return }
+                    withAnimation(OshiSpringPreset.snappy.animation) {
+                        proxy.scrollTo(newID, anchor: .bottom)
                     }
                 }
-                .padding(OshiSpacing.lg)
             }
-            .defaultScrollAnchor(.bottom)
 
             // Input bar
             inputBar
+        }
+        .onDisappear {
+            sendTask?.cancel()
+            sendTask = nil
         }
     }
 
@@ -149,8 +163,10 @@ public struct OshiChatView: View {
         isSending = true
         OshiHapticEngine.impact(.light)
 
-        Task { @MainActor in
+        sendTask?.cancel()
+        sendTask = Task {
             await onSend(trimmed)
+            guard !Task.isCancelled else { return }
             isSending = false
         }
     }

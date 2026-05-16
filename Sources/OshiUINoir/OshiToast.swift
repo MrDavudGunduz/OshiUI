@@ -109,34 +109,64 @@ public struct OshiToastConfiguration: Sendable {
 // MARK: - Toast Modifier
 
 /// A view modifier that presents a toast notification overlay.
+///
+/// This type is intentionally **internal** — consumers should use the
+/// ``SwiftUICore/View/oshiToast(isPresented:configuration:content:)``
+/// convenience modifier rather than composing this modifier directly.
+/// Keeping the modifier internal allows future API evolution (e.g.
+/// adding Reduce Motion support to the slide-in transition) without
+/// breaking the public surface.
 struct OshiToastModifier<ToastContent: View>: ViewModifier {
 
     @Binding var isPresented: Bool
     let configuration: OshiToastConfiguration
     @ViewBuilder let toastContent: () -> ToastContent
 
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
+    /// Resolves the presentation animation — falls back to a simple eased
+    /// transition when the user has enabled **Reduce Motion**.
+    private var resolvedAnimation: Animation {
+        reduceMotion
+            ? .easeInOut(duration: 0.25)
+            : OshiSpringPreset.bouncy.animation
+    }
+
+    /// Resolves the transition — uses opacity-only when Reduce Motion is on,
+    /// otherwise combines slide + opacity for a cinematic entrance.
+    private var resolvedTransition: AnyTransition {
+        reduceMotion
+            ? .opacity
+            : .move(edge: configuration.edge).combined(with: .opacity)
+    }
+
+    /// Resolves the dismiss animation.
+    private var resolvedDismissAnimation: Animation {
+        reduceMotion
+            ? .easeInOut(duration: 0.2)
+            : OshiSpringPreset.snappy.animation
+    }
+
     func body(content: Content) -> some View {
         content
             .overlay(alignment: alignment) {
                 if isPresented {
                     toastContent()
-                        .transition(
-                            .move(edge: configuration.edge)
-                            .combined(with: .opacity)
-                        )
+                        .transition(resolvedTransition)
                         .padding(OshiSpacing.xl)
                         .task(id: isPresented) {
                             guard isPresented else { return }
                             try? await Task.sleep(for: configuration.duration)
-                            withAnimation(OshiSpringPreset.snappy.animation) {
+                            withAnimation(resolvedDismissAnimation) {
                                 isPresented = false
                             }
                         }
                 }
             }
-            .animation(OshiSpringPreset.bouncy.animation, value: isPresented)
+            .animation(resolvedAnimation, value: isPresented)
             .accessibilityAction(named: "Dismiss notification") {
-                withAnimation(OshiSpringPreset.snappy.animation) {
+                withAnimation(resolvedDismissAnimation) {
                     isPresented = false
                 }
             }

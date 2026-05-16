@@ -7,43 +7,44 @@
 
 /// # OshiUIHolographic
 ///
-/// Spatial simulations bridging RealityKit and SwiftUI for visionOS-ready experiences.
+/// Spatial depth simulations and volumetric UI for visionOS-ready experiences.
 ///
-/// `OshiUIHolographic` makes future technologies — volumetric UI, 3D canvases,
-/// and spatial interactions — as easy to use as standard SwiftUI views.
-/// On non-visionOS platforms, components gracefully degrade to 2.5D representations.
+/// `OshiUIHolographic` brings spatial depth and holographic aesthetics to
+/// standard SwiftUI views through parallax rotation, glow effects, and
+/// volumetric panel styling. On non-visionOS platforms, components gracefully
+/// degrade to 2.5D representations using hover-driven and gyroscope-driven
+/// parallax.
 ///
 /// ## Components
 ///
-/// - **Futuristic 3D Canvas**: A RealityKit-bridged container that renders
-///   3D content inline within SwiftUI layouts. Supports lighting, shadows,
-///   and camera control.
-/// - **Spatial Drag-and-Drop Containers**: Zones where users can drag 3D models
-///   and reposition them in space with physics-based settling.
-/// - **Volumetric Control Panels**: Floating control surfaces optimized for
-///   visionOS, with gaze-responsive hover states and hand-tracking affordances.
+/// - **Holographic Canvas**: A container that renders content with 3D parallax
+///   depth effects driven by hover position (macOS) or device motion (iOS).
+///   Supports rotation clamping, glow borders, and holographic sheen overlays.
+/// - **Volumetric Control Panels**: Floating glass-styled control surfaces
+///   with neon borders, optimized for spatial interfaces on visionOS.
 ///
 /// ## Platform Behavior
 ///
 /// | Platform | Rendering |
 /// |----------|-----------|
-/// | **visionOS** | Full volumetric with RealityKit |
-/// | **iOS** | ARKit-backed 3D preview (camera optional) |
-/// | **macOS** | SceneKit fallback with mouse interaction |
+/// | **visionOS** | Full volumetric with depth |
+/// | **iOS** | Gyroscope-driven parallax |
+/// | **macOS** | Hover-driven parallax |
 ///
 /// ## Usage
 ///
 /// ```swift
 /// import OshiUIHolographic
 ///
-/// // Inline 3D canvas
+/// // Holographic 3D canvas with parallax
 /// OshiHolographicCanvas {
-///     OshiModel3D(named: "spacecraft")
-///         .oshiRotation(.degrees(45), axis: .y)
+///     Image(systemName: "globe")
+///         .font(.system(size: 60))
+///         .foregroundStyle(OshiColor.neonCyan)
 /// }
 /// .frame(height: 300)
 ///
-/// // Volumetric control panel (visionOS)
+/// // Volumetric control panel
 /// OshiVolumetricPanel {
 ///     Toggle("Shields", isOn: $shieldsActive)
 ///     Slider(value: $power, in: 0...100)
@@ -54,10 +55,6 @@
 ///
 /// ### 3D Content
 /// - ``OshiHolographicCanvas``
-/// - ``OshiModel3D``
-///
-/// ### Spatial Interaction
-/// - ``OshiSpatialDropZone``
 ///
 /// ### visionOS
 /// - ``OshiVolumetricPanel``

@@ -12,7 +12,9 @@ import OshiUISpatial
 /// A container that renders content with holographic 3D depth effects.
 ///
 /// `OshiHolographicCanvas` creates a volumetric presentation for its content
-/// using rotation, parallax, and holographic material effects.
+/// using rotation, parallax, and holographic material effects. Automatically
+/// respects the **Reduce Motion** accessibility setting by disabling
+/// hover-driven parallax rotation.
 ///
 /// | Platform | Rendering |
 /// |----------|-----------|
@@ -45,6 +47,9 @@ public struct OshiHolographicCanvas<Content: View>: View {
     @State private var rotationY: Double = 0
     @State private var isHovered = false
 
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
     /// Creates a holographic canvas.
     ///
     /// - Parameter content: The content to present with holographic depth.
@@ -76,15 +81,15 @@ public struct OshiHolographicCanvas<Content: View>: View {
                             )
                     )
 
-                // Content layer
+                // Content layer — parallax disabled when Reduce Motion is on
                 content()
                     .rotation3DEffect(
-                        .degrees(rotationX),
+                        .degrees(reduceMotion ? 0 : rotationX),
                         axis: (x: 1, y: 0, z: 0),
                         perspective: 0.5
                     )
                     .rotation3DEffect(
-                        .degrees(rotationY),
+                        .degrees(reduceMotion ? 0 : rotationY),
                         axis: (x: 0, y: 1, z: 0),
                         perspective: 0.5
                     )
@@ -118,6 +123,7 @@ public struct OshiHolographicCanvas<Content: View>: View {
                 radius: isHovered ? 20 : 10
             )
             .onHover { hovering in
+                guard !reduceMotion else { return }
                 withAnimation(.easeOut(duration: 0.3)) {
                     isHovered = hovering
                     if !hovering {
@@ -127,6 +133,7 @@ public struct OshiHolographicCanvas<Content: View>: View {
                 }
             }
             .onContinuousHover { phase in
+                guard !reduceMotion else { return }
                 switch phase {
                 case .active(let location):
                     withAnimation(.interactiveSpring(response: 0.15)) {

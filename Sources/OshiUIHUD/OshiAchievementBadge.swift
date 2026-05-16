@@ -29,6 +29,9 @@ public struct OshiAchievementBadge: View {
 
     @State private var glowPulse = false
 
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
     /// Creates an achievement badge.
     ///
     /// - Parameters:
@@ -64,7 +67,7 @@ public struct OshiAchievementBadge: View {
                 radius: glowPulse ? 16 : 8
             )
             .onAppear {
-                guard isUnlocked else { return }
+                guard isUnlocked, !reduceMotion else { return }
                 withAnimation(
                     .easeInOut(duration: 1.5).repeatForever(autoreverses: true)
                 ) {

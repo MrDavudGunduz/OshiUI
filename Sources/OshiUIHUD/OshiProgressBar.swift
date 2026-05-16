@@ -24,6 +24,9 @@ import OshiUIKinetic
 /// ```
 public struct OshiProgressBar: View {
 
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
     /// The current progress value (0.0 to 1.0).
     public let value: Double
 
@@ -47,6 +50,15 @@ public struct OshiProgressBar: View {
         self.value = min(max(value, 0), 1)
         self.style = style
         self.accentColor = accentColor
+    }
+
+    /// Resolves the animation — falls back to `.standard` when Reduce Motion is on
+    /// and the requested style is `.kinetic` (spring-based).
+    private var resolvedAnimation: Animation? {
+        if reduceMotion && style == .kinetic {
+            return OshiProgressStyle.standard.animation
+        }
+        return style.animation
     }
 
     public var body: some View {
@@ -83,7 +95,7 @@ public struct OshiProgressBar: View {
         }
         .frame(height: 8)
         .clipShape(Capsule())
-        .animation(style.animation, value: value)
+        .animation(resolvedAnimation, value: value)
         .accessibilityElement()
         .accessibilityLabel("Progress")
         .accessibilityValue("\(Int(value * 100)) percent")
@@ -94,7 +106,7 @@ public struct OshiProgressBar: View {
 // MARK: - Progress Style
 
 /// The animation style for an ``OshiProgressBar``.
-public enum OshiProgressStyle: Sendable {
+public enum OshiProgressStyle: Sendable, Equatable {
 
     /// Standard eased animation — smooth and predictable.
     case standard
