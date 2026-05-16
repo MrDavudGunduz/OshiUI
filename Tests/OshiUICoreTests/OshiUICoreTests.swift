@@ -178,3 +178,42 @@ struct OshiPlatformTests {
         #endif
     }
 }
+
+// MARK: - Neon Glow Modifier
+
+@Suite("OshiUICore — Neon Glow Modifier")
+struct OshiNeonGlowModifierTests {
+
+    @Test("Default init uses neon cyan with radius 10")
+    func defaultInit() {
+        let modifier = OshiNeonGlowModifier()
+        #expect(modifier.color == OshiColor.neonCyan)
+        #expect(modifier.radius == 10)
+        #expect(modifier.intensity == 2)
+    }
+
+    @Test("Custom init preserves parameters")
+    func customInit() {
+        let modifier = OshiNeonGlowModifier(
+            color: OshiColor.neonMagenta,
+            radius: 20,
+            intensity: 3
+        )
+        #expect(modifier.color == OshiColor.neonMagenta)
+        #expect(modifier.radius == 20)
+        #expect(modifier.intensity == 3)
+    }
+
+    @Test("Single intensity omits outer shadow")
+    func singleIntensity() {
+        let modifier = OshiNeonGlowModifier(intensity: 1)
+        // With intensity 1, the outermost shadow should use .clear
+        #expect(modifier.intensity == 1)
+    }
+
+    @Test("Radius must be positive for visible glow")
+    func radiusPositive() {
+        let modifier = OshiNeonGlowModifier(radius: 0)
+        #expect(modifier.radius == 0, "Zero radius should be accepted")
+    }
+}

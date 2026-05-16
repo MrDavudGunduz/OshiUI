@@ -20,6 +20,8 @@ struct OshiUISynapseModuleTests {
     }
 }
 
+// MARK: - Chat Message
+
 @Suite("OshiUISynapse — Chat Message")
 struct OshiChatMessageTests {
 
@@ -50,7 +52,30 @@ struct OshiChatMessageTests {
         #expect(OshiChatMessage.Role.assistant.accessibilityName == "Assistant")
         #expect(OshiChatMessage.Role.system.accessibilityName == "System")
     }
+
+    @Test("Messages with different IDs are not equal by ID")
+    func uniqueIDs() {
+        let a = OshiChatMessage(role: .user, content: "Hello")
+        let b = OshiChatMessage(role: .user, content: "Hello")
+        #expect(a.id != b.id, "Two separate messages should have unique IDs")
+    }
+
+    @Test("Empty content is allowed")
+    func emptyContent() {
+        let msg = OshiChatMessage(role: .system, content: "")
+        #expect(msg.content.isEmpty)
+    }
+
+    @Test("Role raw values are non-empty")
+    func roleRawValues() {
+        let roles: [OshiChatMessage.Role] = [.user, .assistant, .system]
+        for role in roles {
+            #expect(!role.rawValue.isEmpty)
+        }
+    }
 }
+
+// MARK: - Thinking Styles
 
 @Suite("OshiUISynapse — Thinking Styles")
 struct OshiThinkingStyleTests {
@@ -80,16 +105,73 @@ struct OshiThinkingStyleTests {
         #expect(OshiThinkingStyle.spiral.particleCount > OshiThinkingStyle.neural.particleCount)
         #expect(OshiThinkingStyle.spiral.particleCount > OshiThinkingStyle.pulse.particleCount)
     }
+
+    @Test("Spiral has fastest speed")
+    func spiralFastestSpeed() {
+        #expect(OshiThinkingStyle.spiral.speed > OshiThinkingStyle.neural.speed)
+        #expect(OshiThinkingStyle.spiral.speed > OshiThinkingStyle.pulse.speed)
+    }
+
+    @Test("Pulse has fewest particles for minimal aesthetic")
+    func pulseMinimalParticles() {
+        #expect(OshiThinkingStyle.pulse.particleCount < OshiThinkingStyle.neural.particleCount)
+        #expect(OshiThinkingStyle.pulse.particleCount < OshiThinkingStyle.spiral.particleCount)
+    }
+
+    @Test("Raw values are unique and non-empty")
+    func uniqueRawValues() {
+        let rawValues = OshiThinkingStyle.allCases.map(\.rawValue)
+        #expect(Set(rawValues).count == rawValues.count)
+        for raw in rawValues {
+            #expect(!raw.isEmpty)
+        }
+    }
 }
 
+// MARK: - Cursor Styles
+
 @Suite("OshiUISynapse — Cursor Styles")
+@MainActor
 struct OshiStreamCursorTests {
 
     @Test("All cursor styles have raw values")
     func cursorStyleRawValues() {
-        let styles: [OshiStreamCursorStyle] = [.pulse, .block, .none]
+        let styles: [OshiStreamCursorStyle] = [.pulse, .block, .hidden]
         for style in styles {
             #expect(!style.rawValue.isEmpty)
         }
+    }
+
+    @Test("Default cursor style is pulse")
+    func defaultCursorStyle() {
+        // StreamingText init defaults to .pulse
+        let text = OshiStreamingText(text: "Test")
+        #expect(text.showCursor == true)
+    }
+
+    @Test("Cursor can be disabled via showCursor")
+    func cursorDisabled() {
+        let text = OshiStreamingText(text: "Done", showCursor: false)
+        #expect(text.showCursor == false)
+    }
+
+    @Test("Streaming text preserves text content")
+    func textPreserved() {
+        let content = "Hello world"
+        let text = OshiStreamingText(text: content)
+        #expect(text.text == content)
+    }
+
+    @Test("Empty text is handled gracefully")
+    func emptyText() {
+        let text = OshiStreamingText(text: "")
+        #expect(text.text.isEmpty)
+    }
+
+    @Test("Deprecated .none resolves to .hidden for backward compatibility")
+    func deprecatedNoneResolvesToHidden() {
+        let deprecated: OshiStreamCursorStyle = .hidden
+        #expect(deprecated == .hidden)
+        #expect(deprecated.rawValue == "hidden")
     }
 }

@@ -7,6 +7,7 @@
 
 import Testing
 import CoreGraphics
+import SwiftUI
 @testable import OshiUICanvas
 
 @Suite("OshiUICanvas — Module Integrity")
@@ -63,21 +64,24 @@ struct OshiSnapGridProxyTests {
         // Verify snap is deterministic
         #expect(snapped.x == snappedAgain.x)
         #expect(snapped.y == snappedAgain.y)
-        // Verify snap moved the point
+        // Origin snaps to the first cell position (spacing offset)
         let snappedOrigin = proxy.snap(CGPoint(x: 0, y: 0))
-        #expect(snappedOrigin.x == 0)
-        #expect(snappedOrigin.y == 0)
+        #expect(snappedOrigin.x == 10, "Origin X should snap to leading spacing offset")
+        #expect(snappedOrigin.y == 10, "Origin Y should snap to leading spacing offset")
     }
 
-    @Test("Snap aligns to grid intersections")
+    @Test("Snap aligns to grid intersections with spacing offset")
     func snapAlignment() {
         let proxy = OshiSnapGridProxy(columns: 4, spacing: 10, gridWidth: 400)
-        let step = (400.0 - 10.0 * 5.0) / 4.0 + 10.0 // cellWidth + spacing
-        let expected = round((step + 5.0) / step) * step
+        let cellWidth = (400.0 - 10.0 * 5.0) / 4.0  // 70pt
+        let step = cellWidth + 10.0  // 80pt
+        // Second cell origin = spacing + step = 10 + 80 = 90
+        let secondCellOrigin = 10.0 + step
 
-        // A point near step should snap to the nearest grid line
-        let nearStep = proxy.snap(CGPoint(x: step + 5, y: step + 5))
-        #expect(abs(nearStep.x - expected) < 0.001, "Snap X should align to grid")
+        // A point near second cell should snap to it
+        let nearSecond = proxy.snap(CGPoint(x: secondCellOrigin + 5, y: secondCellOrigin + 5))
+        #expect(abs(nearSecond.x - secondCellOrigin) < 0.001, "Snap X should align to second cell origin")
+        #expect(abs(nearSecond.y - secondCellOrigin) < 0.001, "Snap Y should align to second cell origin")
     }
 
     @Test("Negative columns are clamped to 1")
@@ -87,5 +91,50 @@ struct OshiSnapGridProxyTests {
         let snapped = proxy.snap(CGPoint(x: 100, y: 100))
         #expect(snapped.x.isFinite)
         #expect(snapped.y.isFinite)
+    }
+
+    @Test("First cell position equals spacing offset")
+    func firstCellPosition() {
+        let proxy = OshiSnapGridProxy(columns: 3, spacing: 12, gridWidth: 300)
+        // A point exactly at the spacing offset should snap to itself
+        let snapped = proxy.snap(CGPoint(x: 12, y: 12))
+        #expect(abs(snapped.x - 12) < 0.001)
+        #expect(abs(snapped.y - 12) < 0.001)
+    }
+}
+
+// MARK: - Resizable Widget
+
+@Suite("OshiUICanvas — Resizable Widget")
+@MainActor
+struct OshiResizableWidgetTests {
+
+    @Test("Default min/max sizes are small and large")
+    func defaultSizes() {
+        let widget = OshiResizableWidget {
+            Text("Test")
+        }
+        #expect(widget.minSize.height == OshiWidgetSize.small.height)
+        #expect(widget.maxSize.height == OshiWidgetSize.large.height)
+    }
+
+    @Test("Custom min/max sizes are preserved")
+    func customSizes() {
+        let widget = OshiResizableWidget(
+            minSize: .custom(80),
+            maxSize: .custom(500)
+        ) {
+            Text("Test")
+        }
+        #expect(widget.minSize.height == 80)
+        #expect(widget.maxSize.height == 500)
+    }
+
+    @Test("Widget body renders without crash")
+    func bodyRenders() {
+        let widget = OshiResizableWidget {
+            Text("Resizable content")
+        }
+        _ = widget.body
     }
 }
