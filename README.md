@@ -168,7 +168,7 @@ content
 ```swift
 // Buttons that physically push back
 Button("Save") { save() }
-    .buttonStyle(.kineticImpact(intensity: .heavy, accentColor: .oshiLime))
+    .buttonStyle(.oshiKineticImpact(intensity: .heavy, accentColor: .oshiLime))
 
 // Organic morph transitions
 OshiMorphView(isExpanded: $isOpen, spring: .bouncy) {
@@ -194,13 +194,28 @@ OshiAchievementBadge(title: "Champion", tier: .gold, isUnlocked: true)
 ### 🤖 AI/LLM Interfaces
 
 ```swift
-// High-performance streaming text (120+ tokens/sec at 60fps)
+// Streaming text with animation-suppressed rendering for smooth token display
 OshiStreamingText(text: viewModel.streamedText)
     .oshiStreamCursor(.pulse)
 
 // Neural thinking particles
 OshiThinkingParticles(style: .neural, color: OshiColor.neonCyan)
 ```
+
+---
+
+## Accessibility
+
+OshiUI treats accessibility as a **first-class architectural concern**, not an afterthought. Every component respects system accessibility preferences automatically:
+
+| Setting | Components Affected |
+|---------|-------------------|
+| **Reduce Motion** | `OshiVolumetricButtonStyle`, `KineticImpactButtonStyle`, `OshiLayeredCard`, `OshiProgressBar`, `OshiNeonGlowModifier`, `OshiHolographicCanvas`, `OshiRadarChart`, `OshiAchievementBadge`, `OshiThinkingParticles` |
+| **Reduce Transparency** | `GlassmorphismModifier` |
+| **VoiceOver** | All interactive components with labels, traits, values, and hints |
+| **Dynamic Type** | Full support via `OshiTypography` token system |
+
+> When Reduce Motion is enabled, spring animations fall back to eased transitions, parallax effects are disabled, and particle systems show static indicators — all without any configuration.
 
 ---
 
@@ -220,10 +235,10 @@ OshiThinkingParticles(style: .neural, color: OshiColor.neonCyan)
 
 1. **Modular by Design** — Each module is independently compilable and adoptable. No monoliths.
 2. **Identifiable-First** — All list and grid data structures use dynamic `Identifiable` conformance. Hardcoded indices are architecturally prohibited.
-3. **Swift 6 Concurrency** — Strict `Sendable` compliance across all public API surfaces.
-4. **Platform Adaptive** — Automatic behavior adaptation across iOS, macOS, and visionOS via compile-time platform abstractions.
+3. **Swift 6 Concurrency** — Strict `Sendable` compliance across all public API surfaces. `@MainActor` isolation where required.
+4. **Platform Adaptive** — Automatic behavior adaptation across iOS, macOS, and visionOS via the `OshiPlatform` compile-time abstraction layer.
 5. **Zero-Configuration Defaults** — Every component works beautifully out of the box while remaining deeply customizable.
-6. **Accessibility-First** — All components include VoiceOver labels, traits, and dynamic type support. `Reduce Transparency` is respected automatically.
+6. **Accessibility-First** — All components include VoiceOver labels, traits, and Dynamic Type support. `Reduce Motion` and `Reduce Transparency` are respected automatically across the entire framework.
 
 ---
 
@@ -234,6 +249,10 @@ Full API documentation is available via Apple DocC:
 ```bash
 # Generate documentation locally
 swift package generate-documentation --target OshiUICore
+
+# Generate for any module
+swift package generate-documentation --target OshiUISpatial
+swift package generate-documentation --target OshiUIKinetic
 ```
 
 Each module includes:
@@ -256,13 +275,31 @@ Available DocC articles:
 | **Phase 3: Identity & Gamification** | OshiUINoir, OshiUIHUD | ✅ Complete |
 | **Phase 4: Spatial & AI** | OshiUIHolographic, OshiUISynapse | ✅ Complete |
 | **Phase 5: Flexible Workspaces** | OshiUICanvas | ✅ Complete |
-| **Phase 6: Polish & Release** | Testing, Docs, CI/CD | 🔄 In Progress |
+| **Phase 6: Polish & Hardening** | Accessibility, CI/CD, Testing, API consistency | ✅ Complete |
+| **Phase 7: Stable Release** | Gallery app, snapshot tests, perf benchmarks, docs | 🔄 In Progress |
+
+See our [Roadmap](ROADMAP.md) for the full v1.0.0 → v2.0.0 plan including the dynamic theming engine, interactive input components, and Metal shader integration.
+
+---
+
+## Quality Metrics
+
+| Metric | Value |
+|--------|-------|
+| Tests | 136 across 35 suites |
+| Build warnings | 0 |
+| External dependencies | 0 |
+| CI matrix | iOS 18, macOS 15, visionOS 2 |
+| Coverage enforcement | 70% minimum per module |
+| DocC CI verification | All 8 modules |
 
 ---
 
 ## Contributing
 
 We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a pull request.
+
+See the [Roadmap](ROADMAP.md) for current contribution priorities and upcoming milestones.
 
 ---
 
