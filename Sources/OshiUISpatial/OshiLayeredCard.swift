@@ -8,11 +8,70 @@
 import SwiftUI
 import OshiUICore
 
+// MARK: - Depth Level (Top-Level)
+
+/// The depth level for a layered card's shadow system.
+///
+/// Use `.lightweight` in `ScrollView` or `List` contexts with many cards
+/// to avoid shadow stacking performance issues.
+public enum OshiCardDepthLevel: Sendable {
+
+    /// Subtle floating effect with minimal shadow.
+    case shallow
+
+    /// Default depth with balanced shadow.
+    case standard
+
+    /// Pronounced depth for hero cards.
+    case deep
+
+    /// Single-pass shadow optimized for lists and grids.
+    ///
+    /// Use this when rendering 10+ cards simultaneously to avoid
+    /// GPU overhead from stacked shadow layers.
+    case lightweight
+
+    /// The blur radius for the depth shadow.
+    public var shadowRadius: CGFloat {
+        switch self {
+        case .shallow: 8
+        case .standard: 16
+        case .deep: 30
+        case .lightweight: 4
+        }
+    }
+
+    /// The Y-offset for the depth shadow.
+    public var shadowOffset: CGFloat {
+        switch self {
+        case .shallow: 4
+        case .standard: 8
+        case .deep: 16
+        case .lightweight: 2
+        }
+    }
+
+    /// The opacity of the depth shadow.
+    public var shadowOpacity: Double {
+        switch self {
+        case .shallow: 0.15
+        case .standard: 0.25
+        case .deep: 0.4
+        case .lightweight: 0.12
+        }
+    }
+}
+
+// MARK: - Layered Card
+
 /// A 3D parallax card with layered shadow and highlight effects.
 ///
 /// `OshiLayeredCard` creates a floating card sensation by applying depth
 /// through layered shadows, specular highlights, and a subtle scale effect
 /// on hover/press interactions.
+///
+/// Automatically respects the **Reduce Motion** accessibility setting
+/// by disabling hover scale animations.
 ///
 /// ## Usage
 ///
@@ -33,7 +92,7 @@ import OshiUICore
 public struct OshiLayeredCard<Content: View>: View {
 
     /// The depth level affecting shadow intensity and offset.
-    public let depth: DepthLevel
+    public let depth: OshiCardDepthLevel
 
     /// Optional neon accent color for the card border.
     public let accentColor: Color?
@@ -43,6 +102,9 @@ public struct OshiLayeredCard<Content: View>: View {
 
     @State private var isHovered = false
 
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
     /// Creates a layered 3D card.
     ///
     /// - Parameters:
@@ -50,7 +112,7 @@ public struct OshiLayeredCard<Content: View>: View {
     ///   - accentColor: Optional neon border accent. Defaults to `nil`.
     ///   - content: The card's content builder.
     public init(
-        depth: DepthLevel = .standard,
+        depth: OshiCardDepthLevel = .standard,
         accentColor: Color? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
@@ -94,8 +156,11 @@ public struct OshiLayeredCard<Content: View>: View {
                 color: (accentColor ?? .clear).opacity(isHovered ? 0.15 : 0),
                 radius: 20
             )
-            .scaleEffect(isHovered ? 1.02 : 1.0)
-            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isHovered)
+            .scaleEffect(reduceMotion ? 1.0 : (isHovered ? 1.02 : 1.0))
+            .animation(
+                reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.7),
+                value: isHovered
+            )
             .onHover { hovering in
                 isHovered = hovering
             }
@@ -103,46 +168,16 @@ public struct OshiLayeredCard<Content: View>: View {
     }
 }
 
-// MARK: - Depth Level
+// MARK: - Backward Compatibility Typealias
 
 extension OshiLayeredCard {
 
-    /// The depth level for a layered card's shadow system.
-    public enum DepthLevel: Sendable {
-
-        /// Subtle floating effect with minimal shadow.
-        case shallow
-
-        /// Default depth with balanced shadow.
-        case standard
-
-        /// Pronounced depth for hero cards.
-        case deep
-
-        var shadowRadius: CGFloat {
-            switch self {
-            case .shallow: 8
-            case .standard: 16
-            case .deep: 30
-            }
-        }
-
-        var shadowOffset: CGFloat {
-            switch self {
-            case .shallow: 4
-            case .standard: 8
-            case .deep: 16
-            }
-        }
-
-        var shadowOpacity: Double {
-            switch self {
-            case .shallow: 0.15
-            case .standard: 0.25
-            case .deep: 0.4
-            }
-        }
-    }
+    /// Backward-compatible type alias for ``OshiCardDepthLevel``.
+    ///
+    /// - Note: Prefer using `OshiCardDepthLevel` directly for cleaner type signatures.
+    @available(*, deprecated, renamed: "OshiCardDepthLevel",
+               message: "Use the top-level OshiCardDepthLevel instead.")
+    public typealias DepthLevel = OshiCardDepthLevel
 }
 
 // MARK: - Previews

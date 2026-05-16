@@ -31,8 +31,9 @@ public struct OshiResizableWidget<Content: View>: View {
     /// The widget content.
     @ViewBuilder public let content: () -> Content
 
-    @State private var currentHeight: CGFloat = 200
+    @State private var currentHeight: CGFloat = 0
     @State private var dragStartHeight: CGFloat = 0
+    @State private var isDragging = false
 
     /// Creates a resizable widget.
     ///
@@ -98,17 +99,19 @@ public struct OshiResizableWidget<Content: View>: View {
             .gesture(
                 DragGesture()
                     .onChanged { value in
-                        let newHeight = dragStartHeight + value.translation.height
+                        if !isDragging {
+                            dragStartHeight = currentHeight
+                            isDragging = true
+                        }
                         currentHeight = min(
-                            max(newHeight, minSize.height),
+                            max(dragStartHeight + value.translation.height, minSize.height),
                             maxSize.height
                         )
                     }
                     .onEnded { _ in
-                        dragStartHeight = currentHeight
+                        isDragging = false
                     }
             )
-            .onAppear { dragStartHeight = minSize.height }
             .accessibilityHidden(true)
     }
 }

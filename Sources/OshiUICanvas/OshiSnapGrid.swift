@@ -48,6 +48,19 @@ public struct OshiSnapGrid<Content: View>: View {
 }
 
 /// Provides snap-point calculation for ``OshiSnapGrid`` children.
+///
+/// Use `OshiSnapGridProxy` to calculate snap positions when implementing
+/// custom drag-to-snap interactions within an ``OshiSnapGrid``.
+///
+/// ## Usage
+///
+/// ```swift
+/// let proxy = OshiSnapGridProxy(columns: 4, spacing: 12, gridWidth: 400)
+/// let snappedPosition = proxy.snap(currentDragPosition)
+/// ```
+///
+/// > Note: This utility is designed for manual drag integration.
+/// > Built-in drag-to-snap gesture support is planned for a future release.
 public struct OshiSnapGridProxy: Sendable {
     public let columns: Int
     public let spacing: CGFloat
@@ -60,23 +73,40 @@ public struct OshiSnapGridProxy: Sendable {
     }
 
     /// Snaps a point to the nearest grid intersection.
+    ///
+    /// The calculation accounts for the leading `spacing` offset before the
+    /// first column, ensuring snap positions align with actual cell origins.
     public func snap(_ point: CGPoint) -> CGPoint {
         let cellWidth = (gridWidth - spacing * CGFloat(columns + 1)) / CGFloat(columns)
         let step = cellWidth + spacing
-        return CGPoint(x: round(point.x / step) * step, y: round(point.y / step) * step)
+        // Translate into grid-local coordinates (remove leading spacing offset),
+        // snap to nearest step, then translate back.
+        let snappedX = round((point.x - spacing) / step) * step + spacing
+        let snappedY = round((point.y - spacing) / step) * step + spacing
+        return CGPoint(x: snappedX, y: snappedY)
     }
+}
+
+// MARK: - Preview Model
+
+/// An identifiable grid cell model for preview demonstrations.
+private struct PreviewGridCell: Identifiable {
+    let id: Int
+    var label: String { "\(id + 1)" }
 }
 
 // MARK: - Previews
 
 #Preview("Snap Grid — 4 Columns") {
+    let cells = (0..<8).map { PreviewGridCell(id: $0) }
+
     OshiSnapGrid(columns: 4, spacing: 12) {
-        ForEach(0..<8, id: \.self) { index in
+        ForEach(cells) { cell in
             RoundedRectangle(cornerRadius: OshiSpacing.radiusSmall)
                 .fill(OshiColor.surfaceElevated)
                 .frame(height: 80)
                 .overlay(
-                    Text("\(index + 1)")
+                    Text(cell.label)
                         .font(OshiTypography.bodyBold)
                         .foregroundStyle(OshiColor.neonCyan)
                 )
@@ -84,4 +114,3 @@ public struct OshiSnapGridProxy: Sendable {
     }
     .background(OshiColor.surfaceDeep)
 }
-

@@ -19,7 +19,7 @@
 ///
 /// struct MyView: View {
 ///     var body: some View {
-///         OshiButton("Get Started", style: .kineticImpact) {
+///         OshiVolumetricButton("Get Started") {
 ///             // Action
 ///         }
 ///         .oshiGlassmorphism()
@@ -36,7 +36,7 @@
 /// | ``OshiUIKinetic`` | Physics animations, haptic feedback |
 /// | ``OshiUINoir`` | Cyberpunk aesthetics, toast notifications |
 /// | ``OshiUIHUD`` | Progress bars, badges, radar charts |
-/// | ``OshiUIHolographic`` | RealityKit bridge, volumetric UI |
+/// | ``OshiUIHolographic`` | Spatial parallax, volumetric UI |
 /// | ``OshiUISynapse`` | AI/LLM streaming interfaces |
 /// | ``OshiUICanvas`` | Snap grids, resizable widgets |
 

@@ -158,12 +158,12 @@ extension ShapeStyle where Self == Color {
 
 #Preview("OshiColor — Full Palette") {
     ScrollView {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: OshiSpacing.xl) {
             Text("Neon Palette")
                 .font(OshiTypography.title3)
                 .foregroundStyle(OshiColor.textPrimary)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: OshiSpacing.md) {
                 colorSwatch("Cyan", OshiColor.neonCyan)
                 colorSwatch("Magenta", OshiColor.neonMagenta)
                 colorSwatch("Lime", OshiColor.neonLime)
@@ -176,7 +176,7 @@ extension ShapeStyle where Self == Color {
                 .font(OshiTypography.title3)
                 .foregroundStyle(OshiColor.textPrimary)
 
-            HStack(spacing: 12) {
+            HStack(spacing: OshiSpacing.md) {
                 colorSwatch("Deep", OshiColor.surfaceDeep)
                 colorSwatch("Elevated", OshiColor.surfaceElevated)
                 colorSwatch("Floating", OshiColor.surfaceFloating)
@@ -186,19 +186,21 @@ extension ShapeStyle where Self == Color {
                 .font(OshiTypography.title3)
                 .foregroundStyle(OshiColor.textPrimary)
 
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
                 .fill(OshiColor.gradient(OshiColor.neonCyan, OshiColor.neonMagenta))
                 .frame(height: 60)
         }
-        .padding(24)
+        .padding(OshiSpacing.xl)
     }
     .background(OshiColor.surfaceDeep)
 }
 
+// MARK: - Preview Helpers
+
 @ViewBuilder
-private func colorSwatch(_ name: String, _ color: Color) -> some View {
-    VStack(spacing: 4) {
-        RoundedRectangle(cornerRadius: 8)
+fileprivate func colorSwatch(_ name: String, _ color: Color) -> some View {
+    VStack(spacing: OshiSpacing.xs) {
+        RoundedRectangle(cornerRadius: OshiSpacing.radiusSmall)
             .fill(color)
             .frame(width: 60, height: 40)
         Text(name)

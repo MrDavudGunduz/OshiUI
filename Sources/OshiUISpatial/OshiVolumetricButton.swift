@@ -15,6 +15,9 @@ import OshiUICore
 /// Built as a proper `ButtonStyle` for full accessibility, keyboard focus,
 /// and VoiceOver support.
 ///
+/// Automatically respects the **Reduce Motion** accessibility setting by
+/// disabling spring overshoot and scale animations.
+///
 /// ## Usage
 ///
 /// ```swift
@@ -37,6 +40,22 @@ public struct OshiVolumetricButtonStyle: ButtonStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
+        VolumetricButtonBody(configuration: configuration, color: color)
+    }
+}
+
+// MARK: - Inner Body View
+
+/// Private view that reads the Reduce Motion environment for volumetric button rendering.
+private struct VolumetricButtonBody: View {
+
+    let configuration: ButtonStyleConfiguration
+    let color: Color
+
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
+    var body: some View {
         configuration.label
             .font(OshiTypography.bodyBold)
             .foregroundStyle(.white)
@@ -74,8 +93,13 @@ public struct OshiVolumetricButtonStyle: ButtonStyle {
                 radius: configuration.isPressed ? 4 : 12,
                 y: configuration.isPressed ? 2 : 6
             )
-            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
+            .scaleEffect(reduceMotion ? 1.0 : (configuration.isPressed ? 0.97 : 1.0))
+            .animation(
+                reduceMotion
+                    ? .easeInOut(duration: 0.15)
+                    : .spring(response: 0.2, dampingFraction: 0.6),
+                value: configuration.isPressed
+            )
     }
 }
 
@@ -141,7 +165,6 @@ public struct OshiVolumetricButton: View {
     public var body: some View {
         Button(title, action: action)
             .buttonStyle(.oshiVolumetric(color: color))
-            .accessibilityLabel(title)
     }
 }
 
