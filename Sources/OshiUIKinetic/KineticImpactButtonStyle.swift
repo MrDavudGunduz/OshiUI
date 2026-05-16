@@ -14,6 +14,9 @@ import OshiUICore
 /// scale reduction, and haptic intensity. It creates a tactile, responsive
 /// interaction that feels weighted and deliberate.
 ///
+/// Automatically respects the **Reduce Motion** accessibility setting by
+/// falling back to a simple eased animation without scale overshoot.
+///
 /// ## Usage
 ///
 /// ```swift
@@ -21,7 +24,7 @@ import OshiUICore
 ///     .buttonStyle(KineticImpactButtonStyle())
 ///
 /// Button("Submit") { submit() }
-///     .buttonStyle(.kineticImpact(intensity: .heavy, accentColor: .oshiLime))
+///     .buttonStyle(.oshiKineticImpact(intensity: .heavy, accentColor: .oshiLime))
 /// ```
 ///
 /// - Parameter intensity: The haptic feedback intensity. Default is `.medium`.
@@ -53,6 +56,29 @@ public struct KineticImpactButtonStyle: ButtonStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
+        KineticImpactButtonBody(
+            configuration: configuration,
+            intensity: intensity,
+            accentColor: accentColor,
+            spring: spring
+        )
+    }
+}
+
+// MARK: - Inner Body View
+
+/// Private view that reads the Reduce Motion environment for kinetic button rendering.
+private struct KineticImpactButtonBody: View {
+
+    let configuration: ButtonStyleConfiguration
+    let intensity: OshiHapticEngine.ImpactIntensity
+    let accentColor: Color
+    let spring: OshiSpringPreset
+
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
+    var body: some View {
         configuration.label
             .font(OshiTypography.bodyBold)
             .foregroundStyle(.white)
@@ -71,8 +97,13 @@ public struct KineticImpactButtonStyle: ButtonStyle {
                 radius: configuration.isPressed ? 4 : 12,
                 y: configuration.isPressed ? 2 : 6
             )
-            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
-            .animation(spring.animation, value: configuration.isPressed)
+            .scaleEffect(reduceMotion ? 1.0 : (configuration.isPressed ? 0.94 : 1.0))
+            .animation(
+                reduceMotion
+                    ? .easeInOut(duration: 0.15)
+                    : spring.animation,
+                value: configuration.isPressed
+            )
             .onChange(of: configuration.isPressed) { _, isPressed in
                 if isPressed {
                     OshiHapticEngine.impact(intensity)
@@ -87,10 +118,27 @@ extension ButtonStyle where Self == KineticImpactButtonStyle {
 
     /// A kinetic impact button style with spring physics and haptic feedback.
     ///
+    /// This is the primary API following the `.oshi` prefix convention.
+    ///
     /// - Parameters:
     ///   - intensity: Haptic intensity. Defaults to `.medium`.
     ///   - accentColor: Accent color. Defaults to ``OshiColor/neonCyan``.
     /// - Returns: A `KineticImpactButtonStyle` instance.
+    public static func oshiKineticImpact(
+        intensity: OshiHapticEngine.ImpactIntensity = .medium,
+        accentColor: Color = OshiColor.neonCyan
+    ) -> KineticImpactButtonStyle {
+        KineticImpactButtonStyle(intensity: intensity, accentColor: accentColor)
+    }
+
+    /// A kinetic impact button style with spring physics and haptic feedback.
+    ///
+    /// - Parameters:
+    ///   - intensity: Haptic intensity. Defaults to `.medium`.
+    ///   - accentColor: Accent color. Defaults to ``OshiColor/neonCyan``.
+    /// - Returns: A `KineticImpactButtonStyle` instance.
+    @available(*, deprecated, renamed: "oshiKineticImpact(intensity:accentColor:)",
+               message: "Use .oshiKineticImpact() for consistent naming with the .oshi prefix convention.")
     public static func kineticImpact(
         intensity: OshiHapticEngine.ImpactIntensity = .medium,
         accentColor: Color = OshiColor.neonCyan
@@ -104,16 +152,16 @@ extension ButtonStyle where Self == KineticImpactButtonStyle {
 #Preview("Kinetic Impact — Variants") {
     VStack(spacing: 16) {
         Button("Light Impact") { }
-            .buttonStyle(.kineticImpact(intensity: .light))
+            .buttonStyle(.oshiKineticImpact(intensity: .light))
 
         Button("Medium Impact") { }
-            .buttonStyle(.kineticImpact())
+            .buttonStyle(.oshiKineticImpact())
 
         Button("Heavy Impact") { }
-            .buttonStyle(.kineticImpact(intensity: .heavy, accentColor: OshiColor.neonCoral))
+            .buttonStyle(.oshiKineticImpact(intensity: .heavy, accentColor: OshiColor.neonCoral))
 
         Button("Lime Accent") { }
-            .buttonStyle(.kineticImpact(accentColor: OshiColor.neonLime))
+            .buttonStyle(.oshiKineticImpact(accentColor: OshiColor.neonLime))
     }
     .padding(40)
     .background(OshiColor.surfaceDeep)

@@ -18,7 +18,7 @@ import OshiUIKinetic
 
 // Spring physics button with haptic feedback
 Button("Confirm") { submit() }
-    .buttonStyle(.kineticImpact(intensity: .heavy, accentColor: .oshiLime))
+    .buttonStyle(.oshiKineticImpact(intensity: .heavy, accentColor: .oshiLime))
 
 // Morphing expand/collapse view
 OshiMorphView(isExpanded: $isExpanded, spring: .bouncy) {

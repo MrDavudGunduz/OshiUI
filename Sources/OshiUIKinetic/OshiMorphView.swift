@@ -31,6 +31,9 @@ import OshiUICore
 /// ```
 public struct OshiMorphView<Compact: View, Expanded: View>: View {
 
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+
     /// Whether the view is in expanded state.
     @Binding public var isExpanded: Bool
 
@@ -62,30 +65,54 @@ public struct OshiMorphView<Compact: View, Expanded: View>: View {
         self.expanded = expanded
     }
 
+    // MARK: - Resolved Animation
+
+    /// Resolves the morph animation — falls back to a simple eased transition
+    /// when the user has enabled **Reduce Motion** in accessibility settings.
+    private var resolvedAnimation: Animation {
+        reduceMotion
+            ? .easeInOut(duration: 0.25)
+            : spring.animation
+    }
+
+    /// Resolves the transition — disables scale effects when Reduce Motion is on.
+    private var resolvedTransitionIn: AnyTransition {
+        reduceMotion
+            ? .opacity
+            : .scale(scale: 0.95).combined(with: .opacity)
+    }
+
+    private var resolvedTransitionOut: AnyTransition {
+        reduceMotion
+            ? .opacity
+            : .scale(scale: 1.02).combined(with: .opacity)
+    }
+
     public var body: some View {
         VStack(spacing: 0) {
             if isExpanded {
                 expanded()
                     .transition(
                         .asymmetric(
-                            insertion: .scale(scale: 0.95).combined(with: .opacity),
-                            removal: .scale(scale: 0.95).combined(with: .opacity)
+                            insertion: resolvedTransitionIn,
+                            removal: resolvedTransitionIn
                         )
                     )
             } else {
                 compact()
                     .transition(
                         .asymmetric(
-                            insertion: .scale(scale: 1.02).combined(with: .opacity),
-                            removal: .scale(scale: 1.02).combined(with: .opacity)
+                            insertion: resolvedTransitionOut,
+                            removal: resolvedTransitionOut
                         )
                     )
             }
         }
-        .animation(spring.animation, value: isExpanded)
+        .animation(resolvedAnimation, value: isExpanded)
         .contentShape(Rectangle())
         .onTapGesture {
             isExpanded.toggle()
+            // Haptic selection is @MainActor-isolated via SwiftUI's gesture context
             OshiHapticEngine.selection()
         }
         .accessibilityElement(children: .contain)

@@ -29,7 +29,7 @@
 ///
 /// // Kinetic Impact button — spring + haptic on press
 /// Button("Save Changes") { save() }
-///     .buttonStyle(.kineticImpact(intensity: .heavy))
+///     .buttonStyle(.oshiKineticImpact(intensity: .heavy))
 ///
 /// // Morphing transition between states
 /// OshiMorphView(isExpanded: $isExpanded) {

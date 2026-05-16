@@ -69,4 +69,18 @@ public enum OshiSpringPreset: String, Sendable, CaseIterable {
         case .gentle: 0.9
         }
     }
+
+    /// An eased fallback animation for use when **Reduce Motion** is enabled.
+    ///
+    /// The duration is calibrated to this preset's `response` value so that
+    /// the perceived timing remains consistent even without spring overshoot.
+    ///
+    /// ```swift
+    /// let anim = reduceMotion
+    ///     ? OshiSpringPreset.snappy.reducedMotionAnimation
+    ///     : OshiSpringPreset.snappy.animation
+    /// ```
+    public var reducedMotionAnimation: Animation {
+        .easeInOut(duration: response)
+    }
 }
