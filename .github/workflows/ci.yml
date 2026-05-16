@@ -10,6 +10,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SWIFTLINT_VERSION: "0.58.0"
+  MINIMUM_COVERAGE: 70
+  XCODE_VERSION: "26.0"
+
 jobs:
   build-and-test:
     name: ${{ matrix.name }}
@@ -29,12 +34,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Latest Xcode
+      - name: Select Xcode ${{ env.XCODE_VERSION }}
         run: |
-          XCODE_PATH=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
+          if [ ! -d "$XCODE_PATH" ]; then
+            echo "Xcode ${XCODE_VERSION} not found, falling back to latest available"
+            XCODE_PATH=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          fi
           echo "Using Xcode at: $XCODE_PATH"
           sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
           xcodebuild -version
+
+      - name: Cache SPM Dependencies
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
 
       - name: Resolve Dependencies
         run: swift package resolve
@@ -45,11 +62,61 @@ jobs:
             --configuration debug \
             2>&1 | tee build.log
 
-      - name: Test
+      - name: Test with Coverage
         run: |
           swift test \
             --configuration debug \
+            --enable-code-coverage \
             2>&1 | tee test.log
+
+      - name: Export Coverage Report
+        if: matrix.name == 'macOS 15 — Native'
+        run: |
+          BIN_PATH=$(swift build --show-bin-path)
+          XCTEST_PATH="${BIN_PATH}/OshiUIPackageTests.xctest/Contents/MacOS/OshiUIPackageTests"
+          PROFDATA=$(find .build -name "default.profdata" -type f | head -1)
+
+          if [ -n "$PROFDATA" ] && [ -f "$XCTEST_PATH" ]; then
+            xcrun llvm-cov report \
+              "$XCTEST_PATH" \
+              -instr-profile="$PROFDATA" \
+              -ignore-filename-regex=".build|Tests" \
+              2>&1 | tee coverage.txt
+
+            echo "--- Coverage Summary ---"
+            tail -5 coverage.txt
+          else
+            echo "⚠️ Coverage data not found — skipping report"
+          fi
+
+      - name: Enforce Minimum Coverage
+        if: matrix.name == 'macOS 15 — Native'
+        run: |
+          if [ ! -f coverage.txt ]; then
+            echo "⚠️ No coverage report found — skipping enforcement"
+            exit 0
+          fi
+
+          # Extract the total coverage percentage from the TOTAL line
+          TOTAL_LINE=$(grep "^TOTAL" coverage.txt || true)
+          if [ -z "$TOTAL_LINE" ]; then
+            echo "⚠️ Could not parse coverage total — skipping enforcement"
+            exit 0
+          fi
+
+          # Extract the percentage (last column with % sign)
+          COVERAGE=$(echo "$TOTAL_LINE" | awk '{print $NF}' | tr -d '%')
+          COVERAGE_INT=${COVERAGE%.*}
+
+          echo "📊 Total coverage: ${COVERAGE}%"
+          echo "📏 Minimum required: ${MINIMUM_COVERAGE}%"
+
+          if [ "$COVERAGE_INT" -lt "$MINIMUM_COVERAGE" ]; then
+            echo "❌ Coverage ${COVERAGE}% is below minimum ${MINIMUM_COVERAGE}%"
+            exit 1
+          else
+            echo "✅ Coverage ${COVERAGE}% meets minimum threshold"
+          fi
 
       - name: Upload Logs
         if: failure()
@@ -59,13 +126,105 @@ jobs:
           path: |
             build.log
             test.log
+            coverage.txt
+
+  docc:
+    name: DocC Verification
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode ${{ env.XCODE_VERSION }}
+        run: |
+          XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
+          if [ ! -d "$XCODE_PATH" ]; then
+            XCODE_PATH=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          fi
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+
+      - name: Build DocC — OshiUICore
+        run: |
+          swift package generate-documentation \
+            --target OshiUICore \
+            --warnings-as-errors \
+            2>&1 | tee docc-core.log
+
+      - name: Build DocC — OshiUISpatial
+        run: |
+          swift package generate-documentation \
+            --target OshiUISpatial \
+            2>&1 | tee docc-spatial.log
+
+      - name: Build DocC — OshiUIKinetic
+        run: |
+          swift package generate-documentation \
+            --target OshiUIKinetic \
+            2>&1 | tee docc-kinetic.log
+
+      - name: Build DocC — OshiUINoir
+        run: |
+          swift package generate-documentation \
+            --target OshiUINoir \
+            2>&1 | tee docc-noir.log
+
+      - name: Build DocC — OshiUIHUD
+        run: |
+          swift package generate-documentation \
+            --target OshiUIHUD \
+            2>&1 | tee docc-hud.log
+
+      - name: Build DocC — OshiUIHolographic
+        run: |
+          swift package generate-documentation \
+            --target OshiUIHolographic \
+            2>&1 | tee docc-holographic.log
+
+      - name: Build DocC — OshiUISynapse
+        run: |
+          swift package generate-documentation \
+            --target OshiUISynapse \
+            2>&1 | tee docc-synapse.log
+
+      - name: Build DocC — OshiUICanvas
+        run: |
+          swift package generate-documentation \
+            --target OshiUICanvas \
+            2>&1 | tee docc-canvas.log
+
+      - name: Upload DocC Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docc-logs
+          path: docc-*.log
 
   swiftlint:
     name: SwiftLint
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Run SwiftLint
+
+      - name: Cache SwiftLint
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/Cellar/swiftlint
+          key: ${{ runner.os }}-swiftlint-${{ env.SWIFTLINT_VERSION }}
+
+      - name: Install SwiftLint ${{ env.SWIFTLINT_VERSION }}
         run: |
-          brew install swiftlint
-          swiftlint lint --strict --reporter github-actions-logging
+          INSTALLED_VERSION=$(swiftlint version 2>/dev/null || echo "none")
+          if [ "$INSTALLED_VERSION" != "$SWIFTLINT_VERSION" ]; then
+            echo "Installed: $INSTALLED_VERSION — required: $SWIFTLINT_VERSION"
+            # Remove mismatched version before installing the pinned one
+            brew uninstall swiftlint 2>/dev/null || true
+            brew install swiftlint@"$SWIFTLINT_VERSION" 2>/dev/null \
+              || brew install swiftlint || true
+          fi
+          FINAL_VERSION=$(swiftlint version 2>/dev/null || echo "unknown")
+          echo "SwiftLint version: $FINAL_VERSION"
+          if [ "$FINAL_VERSION" != "$SWIFTLINT_VERSION" ]; then
+            echo "⚠️ Expected $SWIFTLINT_VERSION but got $FINAL_VERSION — proceeding anyway"
+          fi
+
+      - name: Run SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging
