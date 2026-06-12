@@ -7,6 +7,11 @@
 
 import SwiftUI
 import OshiUICore
+import os.log
+
+// MARK: - Logger
+
+private let logger = Logger(subsystem: "com.oshiui.hud", category: "RadarChart")
 
 // MARK: - Identifiable Index Wrappers
 
@@ -32,7 +37,7 @@ private struct RadarRingIndex: Identifiable {
 ///     data: [0.8, 0.6, 0.9, 0.5, 0.7],
 ///     axes: ["ATK", "DEF", "SPD", "INT", "LCK"]
 /// )
-/// .oshiRadarFill(OshiColor.gradient(.oshiCyan, .oshiViolet))
+/// .oshiRadarOverlay(OshiColor.gradient(.oshiCyan, .oshiViolet))
 /// ```
 public struct OshiRadarChart: View {
 
@@ -72,6 +77,11 @@ public struct OshiRadarChart: View {
         }
         self.axes = axes
         self.accentColor = accentColor
+
+        // Warn developers when data and axes counts differ.
+        if data.count != axes.count {
+            logger.warning("OshiRadarChart: data count (\(data.count)) ≠ axes count (\(axes.count)). Extra values are ignored; missing values default to 0.")
+        }
     }
 
     public var body: some View {
@@ -79,6 +89,7 @@ public struct OshiRadarChart: View {
         let axisIndices = (0..<count).map { RadarAxisIndex(id: $0) }
         let ringIndices = (1...4).map { RadarRingIndex(id: $0) }
         let labelIndices = (0..<min(axes.count, count)).map { RadarAxisIndex(id: $0) }
+        let resolved = resolvedAnimatedData(count: count)
 
         GeometryReader { geometry in
             let size = min(geometry.size.width, geometry.size.height)
@@ -111,14 +122,14 @@ public struct OshiRadarChart: View {
 
                 // Data polygon
                 radarPath(
-                    values: resolvedAnimatedData(count: count),
+                    values: resolved,
                     center: center,
                     radius: radius
                 )
                 .fill(accentColor.opacity(0.15))
 
                 radarPath(
-                    values: resolvedAnimatedData(count: count),
+                    values: resolved,
                     center: center,
                     radius: radius
                 )
@@ -126,7 +137,6 @@ public struct OshiRadarChart: View {
 
                 // Data points
                 ForEach(axisIndices) { axis in
-                    let resolved = resolvedAnimatedData(count: count)
                     let value = axis.id < resolved.count ? resolved[axis.id] : 0
                     let angle = angleFor(index: axis.id, total: count)
                     let pos = point(center: center, radius: radius, angle: angle, value: value)
@@ -230,12 +240,25 @@ public struct OshiRadarChart: View {
 
 extension View {
 
+    /// Applies a neon gradient overlay to a radar chart view.
+    ///
+    /// This overlay covers the entire chart area — it does **not** clip
+    /// to the data polygon shape. Use it for subtle tinting effects.
+    ///
+    /// - Parameter gradient: The gradient to apply.
+    /// - Returns: A view with a gradient overlay.
+    public func oshiRadarOverlay(_ gradient: LinearGradient) -> some View {
+        self.overlay(gradient.opacity(0.1).allowsHitTesting(false))
+    }
+
     /// Applies a neon fill overlay to a radar chart.
     ///
     /// - Parameter gradient: The gradient to apply.
     /// - Returns: A view with the radar fill styling.
+    @available(*, deprecated, renamed: "oshiRadarOverlay",
+               message: "Use oshiRadarOverlay — this modifier overlays the entire view, not just the data polygon.")
     public func oshiRadarFill(_ gradient: LinearGradient) -> some View {
-        self.overlay(gradient.opacity(0.1).allowsHitTesting(false))
+        oshiRadarOverlay(gradient)
     }
 }
 

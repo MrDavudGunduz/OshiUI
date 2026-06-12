@@ -127,24 +127,69 @@ public struct OshiChatView: View {
                 Text(message.content)
                     .font(OshiTypography.body)
                     .foregroundStyle(OshiColor.textPrimary)
-                    .padding(.horizontal, OshiSpacing.md)
-                    .padding(.vertical, OshiSpacing.sm)
+                    .textSelection(.enabled)
+                    .padding(.horizontal, OshiSpacing.lg)
+                    .padding(.vertical, OshiSpacing.md)
                     .background(
                         RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
                             .fill(
                                 message.role == .user
-                                ? OshiColor.neonCyan.opacity(0.15)
-                                : OshiColor.surfaceElevated
+                                ? AnyShapeStyle(
+                                    LinearGradient(
+                                        colors: [
+                                            OshiColor.neonCyan.opacity(0.18),
+                                            OshiColor.neonCyan.opacity(0.08)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                : AnyShapeStyle(OshiColor.surfaceElevated)
                             )
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
                             .stroke(
                                 message.role == .user
-                                ? OshiColor.neonCyan.opacity(0.2)
-                                : .clear,
+                                ? LinearGradient(
+                                    colors: [
+                                        OshiColor.neonCyan.opacity(0.3),
+                                        OshiColor.neonCyan.opacity(0.08)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                : LinearGradient(
+                                    colors: [
+                                        .white.opacity(0.06),
+                                        .white.opacity(0.02)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
                                 lineWidth: 0.5
                             )
+                    )
+                    .overlay(alignment: .topLeading) {
+                        // Specular shimmer — assistant bubbles only
+                        if message.role == .assistant {
+                            RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.white.opacity(0.05), .clear],
+                                        startPoint: .topLeading,
+                                        endPoint: .center
+                                    )
+                                )
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .shadow(
+                        color: message.role == .user
+                            ? OshiColor.neonCyan.opacity(0.08)
+                            : .black.opacity(0.1),
+                        radius: 6,
+                        y: 2
                     )
             }
 
@@ -165,9 +210,8 @@ public struct OshiChatView: View {
 
         sendTask?.cancel()
         sendTask = Task {
+            defer { isSending = false }
             await onSend(trimmed)
-            guard !Task.isCancelled else { return }
-            isSending = false
         }
     }
 }
@@ -175,7 +219,7 @@ public struct OshiChatView: View {
 // MARK: - Chat Message
 
 /// A single message in an ``OshiChatView`` conversation.
-public struct OshiChatMessage: Identifiable, Sendable {
+public struct OshiChatMessage: Identifiable, Sendable, Equatable, Hashable {
 
     /// The unique message identifier.
     public let id: UUID
