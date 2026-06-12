@@ -153,42 +153,49 @@ jobs:
         run: |
           swift package generate-documentation \
             --target OshiUISpatial \
+            --warnings-as-errors \
             2>&1 | tee docc-spatial.log
 
       - name: Build DocC — OshiUIKinetic
         run: |
           swift package generate-documentation \
             --target OshiUIKinetic \
+            --warnings-as-errors \
             2>&1 | tee docc-kinetic.log
 
       - name: Build DocC — OshiUINoir
         run: |
           swift package generate-documentation \
             --target OshiUINoir \
+            --warnings-as-errors \
             2>&1 | tee docc-noir.log
 
       - name: Build DocC — OshiUIHUD
         run: |
           swift package generate-documentation \
             --target OshiUIHUD \
+            --warnings-as-errors \
             2>&1 | tee docc-hud.log
 
       - name: Build DocC — OshiUIHolographic
         run: |
           swift package generate-documentation \
             --target OshiUIHolographic \
+            --warnings-as-errors \
             2>&1 | tee docc-holographic.log
 
       - name: Build DocC — OshiUISynapse
         run: |
           swift package generate-documentation \
             --target OshiUISynapse \
+            --warnings-as-errors \
             2>&1 | tee docc-synapse.log
 
       - name: Build DocC — OshiUICanvas
         run: |
           swift package generate-documentation \
             --target OshiUICanvas \
+            --warnings-as-errors \
             2>&1 | tee docc-canvas.log
 
       - name: Upload DocC Logs
@@ -205,26 +212,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cache SwiftLint
+        id: cache-swiftlint
         uses: actions/cache@v4
         with:
-          path: /usr/local/Cellar/swiftlint
+          path: /usr/local/bin/swiftlint
           key: ${{ runner.os }}-swiftlint-${{ env.SWIFTLINT_VERSION }}
 
       - name: Install SwiftLint ${{ env.SWIFTLINT_VERSION }}
+        if: steps.cache-swiftlint.outputs.cache-hit != 'true'
         run: |
-          INSTALLED_VERSION=$(swiftlint version 2>/dev/null || echo "none")
-          if [ "$INSTALLED_VERSION" != "$SWIFTLINT_VERSION" ]; then
-            echo "Installed: $INSTALLED_VERSION — required: $SWIFTLINT_VERSION"
-            # Remove mismatched version before installing the pinned one
-            brew uninstall swiftlint 2>/dev/null || true
-            brew install swiftlint@"$SWIFTLINT_VERSION" 2>/dev/null \
-              || brew install swiftlint || true
-          fi
-          FINAL_VERSION=$(swiftlint version 2>/dev/null || echo "unknown")
-          echo "SwiftLint version: $FINAL_VERSION"
-          if [ "$FINAL_VERSION" != "$SWIFTLINT_VERSION" ]; then
-            echo "⚠️ Expected $SWIFTLINT_VERSION but got $FINAL_VERSION — proceeding anyway"
-          fi
+          curl -sL "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/swiftlint_macos.zip" -o swiftlint.zip
+          unzip -o swiftlint.zip swiftlint
+          chmod +x swiftlint
+          sudo mv swiftlint /usr/local/bin/swiftlint
+          rm -f swiftlint.zip
+          echo "SwiftLint version: $(swiftlint version)"
 
       - name: Run SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
