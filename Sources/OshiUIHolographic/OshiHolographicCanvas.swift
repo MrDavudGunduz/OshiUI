@@ -18,9 +18,12 @@ import OshiUISpatial
 ///
 /// | Platform | Rendering |
 /// |----------|-----------|
-/// | **visionOS** | Full volumetric with depth |
-/// | **iOS** | Gyroscope-driven parallax |
-/// | **macOS** | Hover-driven parallax |
+/// | **macOS** | Hover-driven parallax via `onContinuousHover` |
+/// | **iOS** | Static presentation (parallax not yet implemented) |
+/// | **visionOS** | Static presentation (volumetric not yet implemented) |
+///
+/// > Note: iOS gyroscope parallax and visionOS volumetric rendering are
+/// > planned for a future release.
 ///
 /// ## Usage
 ///
@@ -38,10 +41,13 @@ public struct OshiHolographicCanvas<Content: View>: View {
     @ViewBuilder public let content: () -> Content
 
     /// Maximum rotation angle in degrees.
-    private let maxRotation: Double = 10
+    public let maxRotation: Double
 
     /// Rotation sensitivity divisor (higher = less sensitive).
-    private let sensitivity: Double = 15
+    public let sensitivity: Double
+
+    /// Custom accessibility label for the canvas.
+    public let accessibilityDescription: String
 
     @State private var rotationX: Double = 0
     @State private var rotationY: Double = 0
@@ -52,8 +58,20 @@ public struct OshiHolographicCanvas<Content: View>: View {
 
     /// Creates a holographic canvas.
     ///
-    /// - Parameter content: The content to present with holographic depth.
-    public init(@ViewBuilder content: @escaping () -> Content) {
+    /// - Parameters:
+    ///   - maxRotation: Maximum parallax rotation in degrees. Defaults to `10`.
+    ///   - sensitivity: Rotation sensitivity divisor (higher = less sensitive). Defaults to `15`.
+    ///   - accessibilityDescription: Accessibility label. Defaults to `"Holographic display"`.
+    ///   - content: The content to present with holographic depth.
+    public init(
+        maxRotation: Double = 10,
+        sensitivity: Double = 15,
+        accessibilityDescription: String = "Holographic display",
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.maxRotation = maxRotation
+        self.sensitivity = sensitivity
+        self.accessibilityDescription = accessibilityDescription
         self.content = content
     }
 
@@ -149,7 +167,7 @@ public struct OshiHolographicCanvas<Content: View>: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Holographic display")
+        .accessibilityLabel(accessibilityDescription)
     }
 
     // MARK: - Helpers
@@ -177,10 +195,19 @@ public struct OshiVolumetricPanel<Content: View>: View {
     /// The panel content.
     @ViewBuilder public let content: () -> Content
 
+    /// Custom accessibility label for the panel.
+    public let accessibilityDescription: String
+
     /// Creates a volumetric panel.
     ///
-    /// - Parameter content: The panel content builder.
-    public init(@ViewBuilder content: @escaping () -> Content) {
+    /// - Parameters:
+    ///   - accessibilityDescription: Accessibility label. Defaults to `"Control panel"`.
+    ///   - content: The panel content builder.
+    public init(
+        accessibilityDescription: String = "Control panel",
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.accessibilityDescription = accessibilityDescription
         self.content = content
     }
 
@@ -196,7 +223,7 @@ public struct OshiVolumetricPanel<Content: View>: View {
         )
         .shadow(color: OshiColor.neonCyan.opacity(0.1), radius: 20, y: 8)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Control panel")
+        .accessibilityLabel(accessibilityDescription)
     }
 }
 

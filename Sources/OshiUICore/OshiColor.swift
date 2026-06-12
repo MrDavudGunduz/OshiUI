@@ -152,6 +152,9 @@ extension ShapeStyle where Self == Color {
 
     /// OshiUI neon violet accent color.
     public static var oshiViolet: Color { OshiColor.neonViolet }
+
+    /// OshiUI neon coral accent color.
+    public static var oshiCoral: Color { OshiColor.neonCoral }
 }
 
 // MARK: - Previews

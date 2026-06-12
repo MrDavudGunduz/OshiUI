@@ -64,7 +64,9 @@ public enum OshiPlatform: String, Sendable, CaseIterable {
         #if os(iOS)
         return true
         #elseif os(macOS)
-        return true
+        // macOS uses NSHapticFeedbackManager (trackpad), not UIKit haptics.
+        // This property specifically queries UIKit haptic support.
+        return false
         #elseif os(visionOS)
         return false
         #endif

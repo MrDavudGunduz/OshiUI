@@ -9,7 +9,7 @@ import SwiftUI
 import OshiUICore
 import OshiUISpatial
 
-/// A magnetic snap grid layout for draggable components.
+/// A responsive grid layout wrapping `LazyVGrid` with sensible defaults.
 ///
 /// ## Usage
 ///
@@ -20,6 +20,11 @@ import OshiUISpatial
 ///     }
 /// }
 /// ```
+///
+/// > Note: Drag-to-snap gesture support is planned for a future release.
+/// > Currently, `OshiSnapGrid` provides visual grid layout without
+/// > magnetic snapping behavior. Use ``OshiSnapGridProxy`` for manual
+/// > snap-point calculations.
 public struct OshiSnapGrid<Content: View>: View {
 
     public let columns: Int
@@ -44,6 +49,8 @@ public struct OshiSnapGrid<Content: View>: View {
             content()
         }
         .padding(spacing)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Grid layout, \(columns) columns")
     }
 }
 

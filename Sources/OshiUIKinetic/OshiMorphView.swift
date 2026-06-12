@@ -90,6 +90,28 @@ public struct OshiMorphView<Compact: View, Expanded: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) {
+            // Toggle header — tapping this toggles expansion state.
+            // Using a dedicated button instead of .onTapGesture on the
+            // entire container to avoid intercepting child interactions.
+            Button {
+                isExpanded.toggle()
+                OshiHapticEngine.selection()
+            } label: {
+                HStack {
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(OshiColor.textTertiary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                        .animation(resolvedAnimation, value: isExpanded)
+                    Spacer()
+                }
+                .frame(height: 24)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isExpanded ? "Collapse" : "Expand")
+
             if isExpanded {
                 expanded()
                     .transition(
@@ -109,12 +131,6 @@ public struct OshiMorphView<Compact: View, Expanded: View>: View {
             }
         }
         .animation(resolvedAnimation, value: isExpanded)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            isExpanded.toggle()
-            // Haptic selection is @MainActor-isolated via SwiftUI's gesture context
-            OshiHapticEngine.selection()
-        }
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint(isExpanded ? "Double tap to collapse" : "Double tap to expand")

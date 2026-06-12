@@ -193,16 +193,34 @@ public enum OshiHapticEngine: Sendable {
 @MainActor
 public final class SystemHapticProvider: OshiHapticProviding {
 
-    public init() {}
+    // MARK: - Cached Generators (iOS)
+
+    #if os(iOS)
+    private let lightGenerator = UIImpactFeedbackGenerator(style: .light)
+    private let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    private let notificationGenerator = UINotificationFeedbackGenerator()
+    private let selectionGenerator = UISelectionFeedbackGenerator()
+    #endif
+
+    public init() {
+        // Prepare generators for immediate use — reduces first-trigger latency.
+        #if os(iOS)
+        lightGenerator.prepare()
+        mediumGenerator.prepare()
+        heavyGenerator.prepare()
+        #endif
+    }
 
     public func impact(_ intensity: OshiHapticEngine.ImpactIntensity) {
         #if os(iOS)
-        let style: UIImpactFeedbackGenerator.FeedbackStyle = switch intensity {
-        case .light: .light
-        case .medium: .medium
-        case .heavy: .heavy
+        let generator: UIImpactFeedbackGenerator = switch intensity {
+        case .light: lightGenerator
+        case .medium: mediumGenerator
+        case .heavy: heavyGenerator
         }
-        UIImpactFeedbackGenerator(style: style).impactOccurred()
+        generator.impactOccurred()
+        generator.prepare()
         #elseif os(macOS)
         NSHapticFeedbackManager.defaultPerformer.perform(
             .alignment,
@@ -218,7 +236,7 @@ public final class SystemHapticProvider: OshiHapticProviding {
         case .warning: .warning
         case .error: .error
         }
-        UINotificationFeedbackGenerator().notificationOccurred(feedbackType)
+        notificationGenerator.notificationOccurred(feedbackType)
         #elseif os(macOS)
         NSHapticFeedbackManager.defaultPerformer.perform(
             .levelChange,
@@ -229,7 +247,8 @@ public final class SystemHapticProvider: OshiHapticProviding {
 
     public func selection() {
         #if os(iOS)
-        UISelectionFeedbackGenerator().selectionChanged()
+        selectionGenerator.selectionChanged()
+        selectionGenerator.prepare()
         #elseif os(macOS)
         NSHapticFeedbackManager.defaultPerformer.perform(
             .generic,

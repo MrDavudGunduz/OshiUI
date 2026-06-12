@@ -8,10 +8,14 @@
 import SwiftUI
 import OshiUICore
 
-/// A high-performance text view that renders token-by-token LLM output.
+/// A text view for displaying streaming LLM output with an animated cursor.
 ///
-/// `OshiStreamingText` incrementally appends tokens without re-rendering
-/// the entire text, maintaining 60fps at 100+ tokens/second.
+/// `OshiStreamingText` displays a `String` with an optional blinking cursor
+/// to indicate ongoing generation. The consumer is responsible for updating
+/// the `text` parameter as new tokens arrive from the LLM stream.
+///
+/// > Note: A built-in `AsyncSequence`-based streaming variant and Markdown
+/// > rendering are planned for a future release.
 ///
 /// The cursor style can be set via the initializer or the `.oshiStreamCursor()`
 /// environment modifier (environment value takes precedence).
