@@ -63,34 +63,73 @@ public struct OshiProgressBar: View {
 
     public var body: some View {
         GeometryReader { geometry in
+            let fillWidth = geometry.size.width * value
+
             ZStack(alignment: .leading) {
-                // Track
+                // Track — with inner shadow for depth
                 Capsule()
                     .fill(OshiColor.surfaceElevated)
-
-                // Fill
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [accentColor, accentColor.opacity(0.7)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: geometry.size.width * value)
                     .overlay(
-                        // Specular highlight
                         Capsule()
                             .fill(
                                 LinearGradient(
-                                    colors: [.white.opacity(0.3), .clear],
+                                    colors: [
+                                        .black.opacity(0.15),
+                                        .clear,
+                                        .white.opacity(0.03)
+                                    ],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 )
                             )
-                            .padding(1)
                     )
-                    .shadow(color: accentColor.opacity(0.4), radius: 6)
+
+                // Fill — vibrant gradient with specular
+                if value > 0 {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    accentColor,
+                                    accentColor.opacity(0.85),
+                                    accentColor.opacity(0.65)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: max(fillWidth, 8))
+                        .overlay(
+                            // Top specular highlight
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            .white.opacity(0.35),
+                                            .white.opacity(0.1),
+                                            .clear
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .padding(.horizontal, 2)
+                                .padding(.vertical, 1)
+                        )
+                        .overlay(alignment: .trailing) {
+                            // Glowing tip dot
+                            if value < 1 && value > 0.02 {
+                                Circle()
+                                    .fill(.white.opacity(0.9))
+                                    .frame(width: 4, height: 4)
+                                    .shadow(color: accentColor, radius: 4)
+                                    .shadow(color: accentColor.opacity(0.5), radius: 8)
+                                    .padding(.trailing, 3)
+                            }
+                        }
+                        .shadow(color: accentColor.opacity(0.5), radius: 6)
+                        .shadow(color: accentColor.opacity(0.2), radius: 2)
+                }
             }
         }
         .frame(height: 8)

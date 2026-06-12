@@ -8,10 +8,12 @@
 import SwiftUI
 import OshiUICore
 
-/// A modular container that users can drag edges to resize.
+/// A modular container with a bottom drag handle for vertical resizing.
 ///
 /// `OshiResizableWidget` provides a handle at the bottom edge that users
 /// can drag vertically to adjust the content height within min/max bounds.
+/// Horizontal resize is not currently supported — width always fills
+/// the available space.
 ///
 /// ## Usage
 ///
@@ -35,6 +37,8 @@ public struct OshiResizableWidget<Content: View>: View {
     @State private var dragStartHeight: CGFloat = 0
     @State private var isDragging = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     /// Creates a resizable widget.
     ///
     /// - Parameters:
@@ -53,6 +57,21 @@ public struct OshiResizableWidget<Content: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) {
+            // Top accent bar
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            OshiColor.neonCyan.opacity(0.3),
+                            OshiColor.neonCyan.opacity(0.05),
+                            .clear
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 2)
+
             content()
                 .frame(maxWidth: .infinity)
                 .frame(height: currentHeight)
@@ -63,13 +82,46 @@ public struct OshiResizableWidget<Content: View>: View {
         }
         .background(
             RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
-                .fill(OshiColor.surfaceElevated)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            OshiColor.surfaceElevated,
+                            OshiColor.surfaceElevated.opacity(0.95)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        )
+        .overlay(
+            // Specular highlight — subtle top glow
+            RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
+                .fill(
+                    LinearGradient(
+                        colors: [.white.opacity(0.04), .clear],
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                )
+                .allowsHitTesting(false)
         )
         .overlay(
             RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
-                .stroke(OshiColor.textTertiary.opacity(0.2), lineWidth: 0.5)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            OshiColor.textTertiary.opacity(isDragging ? 0.35 : 0.15),
+                            OshiColor.textTertiary.opacity(0.05)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.5
+                )
         )
         .clipShape(RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium))
+        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+        .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
         .onAppear { currentHeight = minSize.height }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Resizable widget")
@@ -91,35 +143,52 @@ public struct OshiResizableWidget<Content: View>: View {
 
     @ViewBuilder
     private var resizeHandle: some View {
-        RoundedRectangle(cornerRadius: 2)
-            .fill(OshiColor.textTertiary)
-            .frame(width: 36, height: 4)
-            .padding(.vertical, OshiSpacing.xs)
-            .contentShape(Rectangle().size(width: 60, height: 24))
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        if !isDragging {
-                            dragStartHeight = currentHeight
-                            isDragging = true
-                        }
+        VStack(spacing: 0) {
+            // Separator line
+            Rectangle()
+                .fill(OshiColor.textTertiary.opacity(isDragging ? 0.15 : 0.08))
+                .frame(height: 0.5)
+
+            // Multi-dot handle pattern
+            HStack(spacing: 4) {
+                ForEach(0..<3, id: \.self) { _ in
+                    Circle()
+                        .fill(OshiColor.textTertiary.opacity(isDragging ? 0.6 : 0.35))
+                        .frame(width: 4, height: 4)
+                }
+            }
+            .animation(.easeOut(duration: 0.2), value: isDragging)
+        }
+        // Hit area — 44pt minimum per Apple HIG
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    if !isDragging {
+                        dragStartHeight = currentHeight
+                        isDragging = true
+                    }
+                    let newHeight = dragStartHeight + value.translation.height
+                    withAnimation(reduceMotion ? nil : .interactiveSpring) {
                         currentHeight = min(
-                            max(dragStartHeight + value.translation.height, minSize.height),
+                            max(newHeight, minSize.height),
                             maxSize.height
                         )
                     }
-                    .onEnded { _ in
-                        isDragging = false
-                    }
-            )
-            .accessibilityHidden(true)
+                }
+                .onEnded { _ in
+                    isDragging = false
+                }
+        )
+        .accessibilityHidden(true)
     }
 }
 
 // MARK: - Widget Size
 
 /// Preset sizes for ``OshiResizableWidget``.
-public enum OshiWidgetSize: Sendable {
+public enum OshiWidgetSize: Sendable, Equatable, Hashable {
     /// Compact widget — 120pt.
     case small
     /// Standard widget — 200pt.

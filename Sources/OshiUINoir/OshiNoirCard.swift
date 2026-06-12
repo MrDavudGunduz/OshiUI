@@ -49,33 +49,90 @@ public struct OshiNoirCard<Content: View>: View {
                 RoundedRectangle(cornerRadius: OshiSpacing.xs)
                     .fill(OshiColor.surfaceDeep)
                     .overlay(
-                        // Scan-line effect
+                        // Scan-line effect — dense horizontal stripes
                         RoundedRectangle(cornerRadius: OshiSpacing.xs)
                             .fill(scanLinePattern)
                     )
+                    .overlay(
+                        // Inner glow — radial accent tint
+                        RoundedRectangle(cornerRadius: OshiSpacing.xs)
+                            .fill(
+                                RadialGradient(
+                                    colors: [
+                                        accentColor.opacity(0.06),
+                                        .clear
+                                    ],
+                                    center: .topLeading,
+                                    startRadius: 0,
+                                    endRadius: 200
+                                )
+                            )
+                    )
             )
             .overlay(
+                // Gradient neon border — bright at top, fading toward bottom
                 RoundedRectangle(cornerRadius: OshiSpacing.xs)
-                    .stroke(accentColor.opacity(0.6), lineWidth: 1)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                accentColor.opacity(0.7),
+                                accentColor.opacity(0.2),
+                                accentColor.opacity(0.4)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
             )
             .overlay(alignment: .topLeading) {
-                // Corner accent
+                // Top-left corner accent — horizontal bar
+                HStack(spacing: 3) {
+                    Rectangle()
+                        .fill(accentColor)
+                        .frame(width: 20, height: 2)
+                    Rectangle()
+                        .fill(accentColor.opacity(0.4))
+                        .frame(width: 6, height: 2)
+                }
+                .offset(x: OshiSpacing.xs, y: 0)
+            }
+            .overlay(alignment: .topLeading) {
+                // Top-left corner accent — vertical bar
                 Rectangle()
                     .fill(accentColor)
-                    .frame(width: 16, height: 2)
-                    .offset(x: OshiSpacing.xs, y: 0)
+                    .frame(width: 2, height: 12)
+                    .offset(x: 0, y: OshiSpacing.xs)
             }
-            .shadow(color: accentColor.opacity(0.2), radius: 12, y: 4)
+            .overlay(alignment: .bottomTrailing) {
+                // Bottom-right corner accent — mirrored
+                HStack(spacing: 3) {
+                    Rectangle()
+                        .fill(accentColor.opacity(0.4))
+                        .frame(width: 6, height: 2)
+                    Rectangle()
+                        .fill(accentColor.opacity(0.6))
+                        .frame(width: 14, height: 2)
+                }
+                .offset(x: -OshiSpacing.xs, y: 0)
+            }
+            .shadow(color: accentColor.opacity(0.15), radius: 20, y: 8)
+            .shadow(color: accentColor.opacity(0.08), radius: 4, y: 1)
             .accessibilityElement(children: .contain)
     }
 
     private var scanLinePattern: some ShapeStyle {
         LinearGradient(
-            colors: [
-                .white.opacity(0.02),
-                .clear,
-                .white.opacity(0.02),
-                .clear
+            stops: [
+                .init(color: .white.opacity(0.025), location: 0.0),
+                .init(color: .clear, location: 0.02),
+                .init(color: .white.opacity(0.015), location: 0.04),
+                .init(color: .clear, location: 0.06),
+                .init(color: .white.opacity(0.02), location: 0.08),
+                .init(color: .clear, location: 0.10),
+                .init(color: .white.opacity(0.015), location: 0.50),
+                .init(color: .clear, location: 0.52),
+                .init(color: .white.opacity(0.02), location: 1.0)
             ],
             startPoint: .top,
             endPoint: .bottom
@@ -103,22 +160,39 @@ public struct OshiNoirDivider: View {
     }
 
     public var body: some View {
-        HStack(spacing: OshiSpacing.sm) {
+        HStack(spacing: OshiSpacing.xs) {
+            // Leading accent dot
+            Circle()
+                .fill(color.opacity(0.8))
+                .frame(width: 3, height: 3)
+                .shadow(color: color.opacity(0.4), radius: 3)
+
+            // Solid accent bar
             Rectangle()
                 .fill(color.opacity(0.6))
                 .frame(width: 20, height: 1)
 
+            // Gradient fade line
             Rectangle()
                 .fill(
                     LinearGradient(
-                        colors: [color.opacity(0.4), color.opacity(0.05)],
+                        colors: [
+                            color.opacity(0.4),
+                            color.opacity(0.1),
+                            color.opacity(0.03)
+                        ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .frame(height: 0.5)
+
+            // Trailing fade dot
+            Circle()
+                .fill(color.opacity(0.15))
+                .frame(width: 2, height: 2)
         }
-        .shadow(color: color.opacity(0.3), radius: 4)
+        .shadow(color: color.opacity(0.2), radius: 4)
         .accessibilityHidden(true)
     }
 }

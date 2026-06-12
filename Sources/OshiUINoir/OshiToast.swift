@@ -52,29 +52,50 @@ public struct OshiToast: View {
     }
 
     public var body: some View {
-        HStack(spacing: OshiSpacing.sm) {
+        HStack(spacing: OshiSpacing.md) {
             if let icon {
                 Image(systemName: icon)
                     .font(OshiTypography.bodyBold)
                     .foregroundStyle(glow)
+                    .frame(width: 28, height: 28)
+                    .background(
+                        Circle()
+                            .fill(glow.opacity(0.12))
+                    )
             }
 
             Text(message)
                 .font(OshiTypography.callout)
                 .foregroundStyle(OshiColor.textPrimary)
         }
-        .padding(.horizontal, OshiSpacing.lg)
+        .padding(.horizontal, OshiSpacing.xl)
         .padding(.vertical, OshiSpacing.md)
         .background(
             Capsule()
-                .fill(OshiColor.surfaceElevated)
+                .fill(.ultraThinMaterial)
                 .overlay(
                     Capsule()
-                        .stroke(glow.opacity(0.3), lineWidth: 0.5)
+                        .fill(OshiColor.surfaceElevated.opacity(0.7))
                 )
         )
-        .shadow(color: glow.opacity(0.25), radius: 16, y: 4)
-        .shadow(color: .black.opacity(0.3), radius: 8, y: 2)
+        .overlay(
+            Capsule()
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            glow.opacity(0.5),
+                            glow.opacity(0.1),
+                            glow.opacity(0.3)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.5
+                )
+        )
+        .shadow(color: glow.opacity(0.2), radius: 20, y: 6)
+        .shadow(color: glow.opacity(0.1), radius: 6, y: 2)
+        .shadow(color: .black.opacity(0.25), radius: 10, y: 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(message)
         .accessibilityAddTraits(.isStaticText)
@@ -84,7 +105,7 @@ public struct OshiToast: View {
 // MARK: - Toast Configuration
 
 /// Configuration options for toast presentation behavior.
-public struct OshiToastConfiguration: Sendable {
+public struct OshiToastConfiguration: Sendable, Equatable {
 
     /// The edge from which the toast slides in.
     public let edge: Edge
@@ -155,8 +176,14 @@ struct OshiToastModifier<ToastContent: View>: ViewModifier {
                     toastContent()
                         .transition(resolvedTransition)
                         .padding(OshiSpacing.xl)
+                        .onTapGesture {
+                            withAnimation(resolvedDismissAnimation) {
+                                isPresented = false
+                            }
+                        }
                         .task(id: isPresented) {
                             guard isPresented else { return }
+                            OshiHapticEngine.notification(.warning)
                             try? await Task.sleep(for: configuration.duration)
                             withAnimation(resolvedDismissAnimation) {
                                 isPresented = false

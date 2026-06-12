@@ -14,7 +14,7 @@ import OshiUICore
 ///
 /// Use `.lightweight` in `ScrollView` or `List` contexts with many cards
 /// to avoid shadow stacking performance issues.
-public enum OshiCardDepthLevel: Sendable {
+public enum OshiCardDepthLevel: Sendable, Hashable {
 
     /// Subtle floating effect with minimal shadow.
     case shallow
@@ -64,11 +64,11 @@ public enum OshiCardDepthLevel: Sendable {
 
 // MARK: - Layered Card
 
-/// A 3D parallax card with layered shadow and highlight effects.
+/// A depth card with layered shadow, specular highlight, and hover-scale effects.
 ///
-/// `OshiLayeredCard` creates a floating card sensation by applying depth
-/// through layered shadows, specular highlights, and a subtle scale effect
-/// on hover/press interactions.
+/// `OshiLayeredCard` creates a floating card sensation through layered
+/// shadows, specular highlights, and a subtle scale effect on hover.
+/// No device motion or gyroscope parallax is used.
 ///
 /// Automatically respects the **Reduce Motion** accessibility setting
 /// by disabling hover scale animations.
@@ -128,23 +128,57 @@ public struct OshiLayeredCard<Content: View>: View {
                     .fill(OshiColor.surfaceElevated)
             )
             .overlay(
+                // Border — gradient that intensifies on hover
                 RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
                     .stroke(
-                        accentColor?.opacity(0.4) ?? .white.opacity(0.08),
+                        LinearGradient(
+                            colors: [
+                                (accentColor ?? .white).opacity(isHovered ? 0.5 : 0.1),
+                                (accentColor ?? .white).opacity(isHovered ? 0.15 : 0.04),
+                                (accentColor ?? .white).opacity(isHovered ? 0.3 : 0.06)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
                         lineWidth: accentColor != nil ? 1 : 0.5
                     )
             )
             .overlay(alignment: .topLeading) {
-                // Specular highlight
+                // Specular highlight — diagonal shimmer
                 RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
                     .fill(
                         LinearGradient(
-                            colors: [.white.opacity(0.08), .clear],
+                            stops: [
+                                .init(color: .white.opacity(0.1), location: 0.0),
+                                .init(color: .white.opacity(0.04), location: 0.15),
+                                .init(color: .clear, location: 0.4),
+                                .init(color: .white.opacity(0.02), location: 0.9),
+                                .init(color: .clear, location: 1.0)
+                            ],
                             startPoint: .topLeading,
-                            endPoint: .center
+                            endPoint: .bottomTrailing
                         )
                     )
                     .allowsHitTesting(false)
+            }
+            .overlay {
+                // Inner ambient glow from accent
+                if let accentColor, isHovered {
+                    RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    accentColor.opacity(0.05),
+                                    .clear
+                                ],
+                                center: .topLeading,
+                                startRadius: 0,
+                                endRadius: 200
+                            )
+                        )
+                        .allowsHitTesting(false)
+                        .transition(.opacity)
+                }
             }
             .clipShape(RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium))
             .shadow(
@@ -153,8 +187,13 @@ public struct OshiLayeredCard<Content: View>: View {
                 y: depth.shadowOffset
             )
             .shadow(
+                color: .black.opacity(0.08),
+                radius: 2,
+                y: 1
+            )
+            .shadow(
                 color: (accentColor ?? .clear).opacity(isHovered ? 0.15 : 0),
-                radius: 20
+                radius: 24
             )
             .scaleEffect(reduceMotion ? 1.0 : (isHovered ? 1.02 : 1.0))
             .animation(

@@ -47,24 +47,72 @@ public struct OshiAchievementBadge: View {
     public var body: some View {
         VStack(spacing: OshiSpacing.sm) {
             ZStack {
+                // Outer decorative ring — dashed border
+                if isUnlocked {
+                    Circle()
+                        .stroke(
+                            tier.color.opacity(0.2),
+                            style: StrokeStyle(lineWidth: 1, dash: [3, 4])
+                        )
+                        .frame(width: 76, height: 76)
+                }
+
+                // Ambient glow ring
                 Circle()
-                    .fill(isUnlocked ? tier.color.opacity(0.15) : OshiColor.surfaceElevated)
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                isUnlocked ? tier.color.opacity(0.12) : .clear,
+                                .clear
+                            ],
+                            center: .center,
+                            startRadius: 20,
+                            endRadius: 44
+                        )
+                    )
+                    .frame(width: 88, height: 88)
+
+                // Main circle — gradient fill
+                Circle()
+                    .fill(
+                        isUnlocked
+                            ? AnyShapeStyle(
+                                LinearGradient(
+                                    colors: [
+                                        tier.color.opacity(0.2),
+                                        tier.color.opacity(0.08)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            : AnyShapeStyle(OshiColor.surfaceElevated)
+                    )
                     .frame(width: 64, height: 64)
 
+                // Inner stroke ring
                 Circle()
                     .stroke(
-                        isUnlocked ? tier.color.opacity(0.6) : OshiColor.textTertiary,
+                        LinearGradient(
+                            colors: isUnlocked
+                                ? [tier.color.opacity(0.8), tier.color.opacity(0.3)]
+                                : [OshiColor.textTertiary.opacity(0.3), OshiColor.textTertiary.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
                         lineWidth: 2
                     )
                     .frame(width: 64, height: 64)
 
+                // Icon with subtle shadow
                 Image(systemName: tier.icon)
                     .font(.title2)
                     .foregroundStyle(isUnlocked ? tier.color : OshiColor.textTertiary)
+                    .shadow(color: isUnlocked ? tier.color.opacity(0.4) : .clear, radius: 4)
             }
             .shadow(
-                color: isUnlocked ? tier.color.opacity(glowPulse ? 0.4 : 0.15) : .clear,
-                radius: glowPulse ? 16 : 8
+                color: isUnlocked ? tier.color.opacity(glowPulse ? 0.4 : 0.1) : .clear,
+                radius: glowPulse ? 20 : 8
             )
             .onAppear {
                 guard isUnlocked, !reduceMotion else { return }
@@ -75,9 +123,16 @@ public struct OshiAchievementBadge: View {
                 }
             }
 
-            Text(title)
-                .font(OshiTypography.caption)
-                .foregroundStyle(isUnlocked ? OshiColor.textPrimary : OshiColor.textTertiary)
+            // Title + tier label
+            VStack(spacing: 2) {
+                Text(title)
+                    .font(OshiTypography.caption)
+                    .foregroundStyle(isUnlocked ? OshiColor.textPrimary : OshiColor.textTertiary)
+                Text(tier.rawValue.uppercased())
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .tracking(1.5)
+                    .foregroundStyle(isUnlocked ? tier.color.opacity(0.6) : OshiColor.textTertiary.opacity(0.5))
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title), \(tier.rawValue) tier")
