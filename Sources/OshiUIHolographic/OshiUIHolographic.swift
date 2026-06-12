@@ -69,5 +69,7 @@ import OshiUISpatial
 public enum OshiUIHolographic {
 
     /// The semantic version of the OshiUIHolographic module.
-    public static let version = "1.0.0-alpha"
+    ///
+    /// Delegates to ``OshiUICore/version`` — the framework-wide single source of truth.
+    public static var version: String { OshiUICore.version }
 }

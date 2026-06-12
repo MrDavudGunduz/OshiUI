@@ -56,6 +56,9 @@ import SwiftUI
 /// It does not contain cases — use the module's public types directly.
 public enum OshiUICore {
 
-    /// The semantic version of the OshiUICore module.
+    /// The semantic version of the OshiUI framework.
+    ///
+    /// This is the **single source of truth** for the framework version.
+    /// All sub-module `version` properties delegate to this value.
     public static let version = "1.0.0-alpha"
 }

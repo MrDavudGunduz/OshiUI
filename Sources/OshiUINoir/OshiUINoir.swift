@@ -59,5 +59,7 @@ import OshiUIKinetic
 public enum OshiUINoir {
 
     /// The semantic version of the OshiUINoir module.
-    public static let version = "1.0.0-alpha"
+    ///
+    /// Delegates to ``OshiUICore/version`` — the framework-wide single source of truth.
+    public static var version: String { OshiUICore.version }
 }

@@ -76,5 +76,7 @@ import OshiUIKinetic
 public enum OshiUISynapse {
 
     /// The semantic version of the OshiUISynapse module.
-    public static let version = "1.0.0-alpha"
+    ///
+    /// Delegates to ``OshiUICore/version`` — the framework-wide single source of truth.
+    public static var version: String { OshiUICore.version }
 }

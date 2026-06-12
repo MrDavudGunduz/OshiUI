@@ -46,7 +46,9 @@ public struct GlassmorphismModifier: ViewModifier {
     /// Creates a glassmorphism modifier.
     ///
     /// - Parameters:
-    ///   - blur: Blur radius. Defaults to `20`.
+    ///   - blur: Blur radius. Values ≤ 20 rely solely on the system material
+    ///     (`.ultraThinMaterial`); values > 20 add additional blur on top.
+    ///     Defaults to `20`.
     ///   - tint: Tint color overlay. Defaults to white at 5% opacity.
     ///   - borderOpacity: Border glow opacity. Defaults to `0.3`.
     ///   - cornerRadius: Corner radius. Defaults to ``OshiSpacing/radiusMedium``.
@@ -78,20 +80,22 @@ public struct GlassmorphismModifier: ViewModifier {
                         )
                 }
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                .white.opacity(borderOpacity),
-                                .white.opacity(borderOpacity * 0.3)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 0.5
-                    )
-            )
+            .overlay {
+                if !reduceTransparency {
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    .white.opacity(borderOpacity),
+                                    .white.opacity(borderOpacity * 0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 0.5
+                        )
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
