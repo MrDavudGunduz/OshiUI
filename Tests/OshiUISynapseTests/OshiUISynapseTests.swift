@@ -175,3 +175,80 @@ struct OshiStreamCursorTests {
         #expect(deprecated.rawValue == "hidden")
     }
 }
+
+// MARK: - Chat Message Edge Cases
+
+@Suite("OshiUISynapse — Chat Message Edge Cases")
+struct OshiChatMessageEdgeCaseTests {
+
+    @Test("Messages with same ID are equal via Identifiable")
+    func sameIDComparison() {
+        let id = UUID()
+        let a = OshiChatMessage(id: id, role: .user, content: "Hello")
+        let b = OshiChatMessage(id: id, role: .assistant, content: "Different")
+        #expect(a.id == b.id, "Same ID should be equal via Identifiable")
+    }
+
+    @Test("Long content is preserved without truncation")
+    func longContent() {
+        let longString = String(repeating: "A", count: 10_000)
+        let msg = OshiChatMessage(role: .user, content: longString)
+        #expect(msg.content.count == 10_000)
+    }
+
+    @Test("Unicode content is preserved correctly")
+    func unicodeContent() {
+        let unicode = "こんにちは世界 🌍 مرحبا العالم"
+        let msg = OshiChatMessage(role: .assistant, content: unicode)
+        #expect(msg.content == unicode)
+    }
+
+    @Test("Emoji-only content is handled gracefully")
+    func emojiContent() {
+        let emojis = "🎮🕹️🎯🏆💎"
+        let msg = OshiChatMessage(role: .user, content: emojis)
+        #expect(msg.content == emojis)
+    }
+
+    @Test("Multiline content preserves newlines")
+    func multilineContent() {
+        let multiline = "Line 1\nLine 2\nLine 3"
+        let msg = OshiChatMessage(role: .system, content: multiline)
+        #expect(msg.content.contains("\n"))
+        #expect(msg.content.split(separator: "\n").count == 3)
+    }
+}
+
+// MARK: - Streaming Text Edge Cases
+
+@Suite("OshiUISynapse — Streaming Text Edge Cases")
+@MainActor
+struct OshiStreamingTextEdgeCaseTests {
+
+    @Test("Long text content is preserved")
+    func longText() {
+        let long = String(repeating: "token ", count: 1000)
+        let text = OshiStreamingText(text: long)
+        #expect(text.text == long)
+    }
+
+    @Test("Unicode text is handled correctly")
+    func unicodeText() {
+        let unicode = "日本語テスト 🚀 العربية"
+        let text = OshiStreamingText(text: unicode)
+        #expect(text.text == unicode)
+    }
+
+    @Test("Text with only whitespace is preserved")
+    func whitespaceText() {
+        let spaces = "   \n\t  "
+        let text = OshiStreamingText(text: spaces)
+        #expect(text.text == spaces)
+    }
+
+    @Test("Body renders without crash for empty text")
+    func emptyBodyRenders() {
+        let text = OshiStreamingText(text: "")
+        _ = text.body
+    }
+}

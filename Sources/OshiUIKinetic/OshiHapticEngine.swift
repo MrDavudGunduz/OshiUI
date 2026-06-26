@@ -193,23 +193,44 @@ public enum OshiHapticEngine: Sendable {
 @MainActor
 public final class SystemHapticProvider: OshiHapticProviding {
 
-    // MARK: - Cached Generators (iOS)
+    // MARK: - Lazy Generators (iOS)
 
     #if os(iOS)
-    private let lightGenerator = UIImpactFeedbackGenerator(style: .light)
-    private let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
-    private let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
-    private let notificationGenerator = UINotificationFeedbackGenerator()
-    private let selectionGenerator = UISelectionFeedbackGenerator()
+    /// Generators are prepared lazily on first use to avoid consuming
+    /// system resources until haptic feedback is actually requested.
+    private lazy var lightGenerator: UIImpactFeedbackGenerator = {
+        let gen = UIImpactFeedbackGenerator(style: .light)
+        gen.prepare()
+        return gen
+    }()
+
+    private lazy var mediumGenerator: UIImpactFeedbackGenerator = {
+        let gen = UIImpactFeedbackGenerator(style: .medium)
+        gen.prepare()
+        return gen
+    }()
+
+    private lazy var heavyGenerator: UIImpactFeedbackGenerator = {
+        let gen = UIImpactFeedbackGenerator(style: .heavy)
+        gen.prepare()
+        return gen
+    }()
+
+    private lazy var notificationGenerator: UINotificationFeedbackGenerator = {
+        let gen = UINotificationFeedbackGenerator()
+        return gen
+    }()
+
+    private lazy var selectionGenerator: UISelectionFeedbackGenerator = {
+        let gen = UISelectionFeedbackGenerator()
+        return gen
+    }()
     #endif
 
     public init() {
-        // Prepare generators for immediate use — reduces first-trigger latency.
-        #if os(iOS)
-        lightGenerator.prepare()
-        mediumGenerator.prepare()
-        heavyGenerator.prepare()
-        #endif
+        // Generators are initialized lazily on first haptic trigger.
+        // This avoids allocating system resources at app launch when
+        // haptics may never be used.
     }
 
     public func impact(_ intensity: OshiHapticEngine.ImpactIntensity) {

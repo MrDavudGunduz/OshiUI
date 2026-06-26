@@ -9,6 +9,19 @@ import SwiftUI
 import OshiUICore
 import OshiUISpatial
 
+// MARK: - Layout Constants
+
+/// Layout constants for ``OshiHolographicCanvas``.
+///
+/// Defined at file scope because Swift does not support static stored
+/// properties inside generic types.
+private enum HolographicCanvasLayout {
+    /// Multiplier for the ambient glow's end radius relative to the
+    /// larger half-dimension of the canvas. A value > 1.0 ensures
+    /// the glow extends slightly beyond the visible bounds.
+    static let glowRadiusMultiplier: CGFloat = 1.3
+}
+
 /// A container that renders content with holographic 3D depth effects.
 ///
 /// `OshiHolographicCanvas` creates a volumetric presentation for its content
@@ -94,7 +107,7 @@ public struct OshiHolographicCanvas<Content: View>: View {
                                     ],
                                     center: .center,
                                     startRadius: 0,
-                                    endRadius: max(midX, midY) * 1.3
+                                    endRadius: max(midX, midY) * HolographicCanvasLayout.glowRadiusMultiplier
                                 )
                             )
                     )

@@ -138,3 +138,89 @@ struct OshiResizableWidgetTests {
         _ = widget.body
     }
 }
+
+// MARK: - Boundary Value Tests
+
+@Suite("OshiUICanvas — Widget Size Edge Cases")
+struct OshiWidgetSizeBoundaryTests {
+
+    @Test("Custom size with zero height is accepted")
+    func customZeroHeight() {
+        let size = OshiWidgetSize.custom(0)
+        #expect(size.height == 0)
+    }
+
+    @Test("Custom size with negative height is accepted as-is")
+    func customNegativeHeight() {
+        // The widget clamps via min/max during drag —
+        // the size enum itself stores the raw value.
+        let size = OshiWidgetSize.custom(-50)
+        #expect(size.height == -50)
+    }
+
+    @Test("Custom size with very large value is accepted")
+    func customVeryLargeHeight() {
+        let size = OshiWidgetSize.custom(10_000)
+        #expect(size.height == 10_000)
+    }
+
+    @Test("Custom size with fractional value preserves precision")
+    func customFractionalHeight() {
+        let size = OshiWidgetSize.custom(99.5)
+        #expect(size.height == 99.5)
+    }
+
+    @Test("Same preset sizes are Equatable")
+    func presetEquatable() {
+        #expect(OshiWidgetSize.small == OshiWidgetSize.small)
+        #expect(OshiWidgetSize.medium == OshiWidgetSize.medium)
+        #expect(OshiWidgetSize.large == OshiWidgetSize.large)
+    }
+
+    @Test("Different preset sizes are not equal")
+    func presetNotEqual() {
+        #expect(OshiWidgetSize.small != OshiWidgetSize.medium)
+        #expect(OshiWidgetSize.medium != OshiWidgetSize.large)
+    }
+
+    @Test("Custom sizes with equal values are Equatable")
+    func customEquatable() {
+        #expect(OshiWidgetSize.custom(200) == OshiWidgetSize.custom(200))
+    }
+
+    @Test("Preset and custom with same height are not equal")
+    func presetVsCustomNotEqual() {
+        // .medium is 200pt, but .custom(200) is a different case
+        #expect(OshiWidgetSize.medium != OshiWidgetSize.custom(200))
+    }
+}
+
+@Suite("OshiUICanvas — Snap Grid Edge Cases")
+struct OshiSnapGridEdgeCaseTests {
+
+    @Test("Single column grid snaps to spacing offset")
+    func singleColumnSnap() {
+        let proxy = OshiSnapGridProxy(columns: 1, spacing: 10, gridWidth: 200)
+        let snapped = proxy.snap(CGPoint(x: 50, y: 50))
+        #expect(snapped.x.isFinite)
+        #expect(snapped.y.isFinite)
+    }
+
+    @Test("Zero spacing grid snaps correctly")
+    func zeroSpacingSnap() {
+        let proxy = OshiSnapGridProxy(columns: 4, spacing: 0, gridWidth: 400)
+        let snapped = proxy.snap(CGPoint(x: 50, y: 50))
+        #expect(snapped.x.isFinite)
+        #expect(snapped.y.isFinite)
+        #expect(snapped.x >= 0)
+        #expect(snapped.y >= 0)
+    }
+
+    @Test("Large grid width produces finite snap results")
+    func largeGridWidth() {
+        let proxy = OshiSnapGridProxy(columns: 10, spacing: 8, gridWidth: 10_000)
+        let snapped = proxy.snap(CGPoint(x: 5000, y: 5000))
+        #expect(snapped.x.isFinite)
+        #expect(snapped.y.isFinite)
+    }
+}

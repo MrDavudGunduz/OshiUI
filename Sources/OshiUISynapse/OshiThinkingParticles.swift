@@ -23,6 +23,13 @@ import OshiUICore
 /// ```
 public struct OshiThinkingParticles: View {
 
+    // MARK: - Layout Constants
+
+    private enum Layout {
+        /// Diameter (in points) of the reduced-motion fallback indicator.
+        static let reducedMotionIndicatorSize: CGFloat = 12
+    }
+
     /// The visual style of the particle animation.
     public let style: OshiThinkingStyle
 
@@ -63,7 +70,7 @@ public struct OshiThinkingParticles: View {
     private var reducedMotionView: some View {
         Circle()
             .fill(color)
-            .frame(width: 12, height: 12)
+            .frame(width: Layout.reducedMotionIndicatorSize, height: Layout.reducedMotionIndicatorSize)
             .opacity(staticPulse ? 1.0 : 0.4)
             .onAppear {
                 withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {

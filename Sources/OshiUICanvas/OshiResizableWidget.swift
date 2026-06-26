@@ -151,7 +151,7 @@ public struct OshiResizableWidget<Content: View>: View {
 
             // Multi-dot handle pattern
             HStack(spacing: 4) {
-                ForEach(0..<3, id: \.self) { _ in
+                ForEach(ResizeHandleDot.dots) { _ in
                     Circle()
                         .fill(OshiColor.textTertiary.opacity(isDragging ? 0.6 : 0.35))
                         .frame(width: 4, height: 4)
@@ -207,6 +207,19 @@ public enum OshiWidgetSize: Sendable, Equatable, Hashable {
         case .custom(let h): h
         }
     }
+}
+
+// MARK: - Resize Handle Dot (Identifiable)
+
+/// An identifiable dot index for the resize handle's ``ForEach``.
+///
+/// Follows the OshiUI "Identifiable-first" architectural rule —
+/// no `ForEach(0..<N, id: \.self)` in view code.
+private struct ResizeHandleDot: Identifiable {
+    let id: Int
+
+    /// The three dots used in the resize handle.
+    static let dots = (0..<3).map { ResizeHandleDot(id: $0) }
 }
 
 // MARK: - Previews

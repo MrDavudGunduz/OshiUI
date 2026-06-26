@@ -41,6 +41,21 @@ private struct RadarRingIndex: Identifiable {
 /// ```
 public struct OshiRadarChart: View {
 
+    // MARK: - Layout Constants
+
+    /// Named constants for radar chart layout, replacing magic numbers
+    /// with semantically meaningful values.
+    private enum Layout {
+        /// Data polygon radius as a fraction of the chart's bounding size.
+        static let radiusScale: CGFloat = 0.35
+        /// Number of concentric grid rings.
+        static let gridRingCount = 4
+        /// Diameter of the data vertex dots in points.
+        static let dataPointDiameter: CGFloat = 6
+        /// Distance (in points) from the axis tip to the label center.
+        static let labelOffset: CGFloat = 20
+    }
+
     /// Normalized data values (0.0 to 1.0) for each axis.
     public let data: [Double]
 
@@ -87,20 +102,20 @@ public struct OshiRadarChart: View {
     public var body: some View {
         let count = max(data.count, 3)
         let axisIndices = (0..<count).map { RadarAxisIndex(id: $0) }
-        let ringIndices = (1...4).map { RadarRingIndex(id: $0) }
+        let ringIndices = (1...Layout.gridRingCount).map { RadarRingIndex(id: $0) }
         let labelIndices = (0..<min(axes.count, count)).map { RadarAxisIndex(id: $0) }
         let resolved = resolvedAnimatedData(count: count)
 
         GeometryReader { geometry in
             let size = min(geometry.size.width, geometry.size.height)
             let center = CGPoint(x: size / 2, y: size / 2)
-            let radius = size * 0.35
+            let radius = size * Layout.radiusScale
 
             ZStack {
                 // Grid rings
                 ForEach(ringIndices) { ring in
                     radarPath(
-                        values: Array(repeating: Double(ring.id) / 4.0, count: count),
+                        values: Array(repeating: Double(ring.id) / Double(Layout.gridRingCount), count: count),
                         center: center,
                         radius: radius
                     )
@@ -143,7 +158,7 @@ public struct OshiRadarChart: View {
 
                     Circle()
                         .fill(accentColor)
-                        .frame(width: 6, height: 6)
+                        .frame(width: Layout.dataPointDiameter, height: Layout.dataPointDiameter)
                         .position(pos)
                         .shadow(color: accentColor.opacity(0.4), radius: 4)
                 }
@@ -152,7 +167,7 @@ public struct OshiRadarChart: View {
                 ForEach(labelIndices) { axis in
                     let angle = angleFor(index: axis.id, total: count)
                     let labelPos = point(
-                        center: center, radius: radius + 20,
+                        center: center, radius: radius + Layout.labelOffset,
                         angle: angle, value: 1.0
                     )
 

@@ -231,3 +231,76 @@ struct OshiRadarChartTests {
         _ = chart.body
     }
 }
+
+// MARK: - Radar Chart Edge Cases
+
+@Suite("OshiUIHUD — Radar Chart Edge Cases")
+@MainActor
+struct OshiRadarChartEdgeCaseTests {
+
+    @Test("Mismatched data and axes counts — more data than axes")
+    func moreDataThanAxes() {
+        let chart = OshiRadarChart(
+            data: [0.5, 0.6, 0.7, 0.8, 0.9],
+            axes: ["A", "B", "C"]
+        )
+        // Extra data values are present but rendered without labels
+        #expect(chart.data.count == 5)
+    }
+
+    @Test("Mismatched data and axes counts — more axes than data")
+    func moreAxesThanData() {
+        let chart = OshiRadarChart(
+            data: [0.5],
+            axes: ["A", "B", "C", "D", "E"]
+        )
+        // Data is padded to at least 3 elements
+        #expect(chart.data.count >= 3)
+    }
+
+    @Test("All-zero data renders without crash")
+    func allZeroData() {
+        let chart = OshiRadarChart(
+            data: [0.0, 0.0, 0.0, 0.0],
+            axes: ["A", "B", "C", "D"]
+        )
+        for value in chart.data {
+            #expect(value == 0.0)
+        }
+        _ = chart.body
+    }
+
+    @Test("All-one data renders without crash")
+    func allOneData() {
+        let chart = OshiRadarChart(
+            data: [1.0, 1.0, 1.0, 1.0],
+            axes: ["A", "B", "C", "D"]
+        )
+        for value in chart.data {
+            #expect(value == 1.0)
+        }
+        _ = chart.body
+    }
+
+    @Test("Extreme clamping preserves count")
+    func extremeClampingPreservesCount() {
+        let chart = OshiRadarChart(
+            data: [-100, 200, -0.001, 1.001],
+            axes: ["A", "B", "C", "D"]
+        )
+        #expect(chart.data.count == 4)
+        #expect(chart.data[0] == 0.0, "Large negative clamped to 0")
+        #expect(chart.data[1] == 1.0, "Large positive clamped to 1")
+        #expect(chart.data[2] == 0.0, "Small negative clamped to 0")
+        #expect(chart.data[3] == 1.0, "Slightly above 1 clamped to 1")
+    }
+
+    @Test("Large axis count renders body without crash")
+    func largeAxisCount() {
+        let data = Array(repeating: 0.5, count: 20)
+        let axes = (0..<20).map { "Axis \($0)" }
+        let chart = OshiRadarChart(data: data, axes: axes)
+        #expect(chart.data.count == 20)
+        _ = chart.body
+    }
+}

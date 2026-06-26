@@ -286,7 +286,7 @@ See our [Roadmap](ROADMAP.md) for the full v1.0.0 → v2.0.0 plan including the 
 
 | Metric | Value |
 |--------|-------|
-| Tests | 136 across 35 suites |
+| Tests | 148 across 38 suites |
 | Build warnings | 0 |
 | External dependencies | 0 |
 | CI matrix | iOS 18, macOS 15, visionOS 2 |

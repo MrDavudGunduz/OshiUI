@@ -210,7 +210,14 @@ public struct OshiChatView: View {
 
         sendTask?.cancel()
         sendTask = Task {
-            defer { isSending = false }
+            defer {
+                // Only reset isSending if this task was not cancelled.
+                // Prevents a cancelled task from clearing the flag after
+                // a new task has already set it to true.
+                if !Task.isCancelled {
+                    isSending = false
+                }
+            }
             await onSend(trimmed)
         }
     }

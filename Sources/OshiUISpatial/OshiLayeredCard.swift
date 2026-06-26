@@ -12,8 +12,21 @@ import OshiUICore
 
 /// The depth level for a layered card's shadow system.
 ///
-/// Use `.lightweight` in `ScrollView` or `List` contexts with many cards
-/// to avoid shadow stacking performance issues.
+/// Each depth level controls shadow radius, offset, and opacity.
+/// Higher depths create more visually impactful cards but add additional
+/// shadow composition layers that impact GPU performance.
+///
+/// > Important: ``shallow``, ``standard``, and ``deep`` each render
+/// > **3 shadow layers** (plus an optional accent shadow on hover).
+/// > In `ScrollView` or `List` contexts with 10+ cards, prefer
+/// > ``lightweight`` which uses a single-pass shadow.
+///
+/// | Level | Shadow Layers | Recommended For |
+/// |-------|--------------|----------------|
+/// | ``shallow`` | 3 | Subtle card grids |
+/// | ``standard`` | 3 | Hero or feature cards |
+/// | ``deep`` | 3 | Modal/focused presentations |
+/// | ``lightweight`` | 1 | ScrollView/List with 10+ cards |
 public enum OshiCardDepthLevel: Sendable, Hashable {
 
     /// Subtle floating effect with minimal shadow.
@@ -72,6 +85,23 @@ public enum OshiCardDepthLevel: Sendable, Hashable {
 ///
 /// Automatically respects the **Reduce Motion** accessibility setting
 /// by disabling hover scale animations.
+///
+/// ## Performance Note
+///
+/// Each card renders multiple shadow layers for visual depth.
+/// When displaying many cards simultaneously (e.g., in a `LazyVStack`
+/// or `ScrollView`), use ``OshiCardDepthLevel/lightweight`` to reduce
+/// GPU overdraw from stacked shadow composition:
+///
+/// ```swift
+/// LazyVStack {
+///     ForEach(items) { item in
+///         OshiLayeredCard(depth: .lightweight) {
+///             ItemRow(item)
+///         }
+///     }
+/// }
+/// ```
 ///
 /// ## Usage
 ///
