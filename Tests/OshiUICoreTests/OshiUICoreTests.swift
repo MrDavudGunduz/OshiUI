@@ -217,3 +217,35 @@ struct OshiNeonGlowModifierTests {
         #expect(modifier.radius == 0, "Zero radius should be accepted")
     }
 }
+
+// MARK: - Reduced Effects Environment Key
+
+@Suite("OshiUICore — Reduced Effects Environment")
+struct OshiReducedEffectsTests {
+
+    @Test("oshiReducedEffects defaults to false")
+    func defaultValue() {
+        let env = EnvironmentValues()
+        #expect(env.oshiReducedEffects == false)
+    }
+}
+
+// MARK: - Adaptive Colors
+
+@Suite("OshiUICore — Adaptive Colors")
+struct OshiAdaptiveColorTests {
+
+    @Test("Adaptive surface colors are accessible")
+    func adaptiveSurfacesExist() {
+        let _ = OshiColor.adaptiveSurfaceDeep
+        let _ = OshiColor.adaptiveSurfaceElevated
+        let _ = OshiColor.adaptiveSurfaceFloating
+    }
+
+    @Test("Adaptive text colors are accessible")
+    func adaptiveTextExist() {
+        let _ = OshiColor.adaptiveTextPrimary
+        let _ = OshiColor.adaptiveTextSecondary
+        let _ = OshiColor.adaptiveTextTertiary
+    }
+}
