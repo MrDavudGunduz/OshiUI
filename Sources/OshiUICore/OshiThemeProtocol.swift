@@ -11,26 +11,31 @@ import SwiftUI
 
 /// A protocol defining the complete visual language for OshiUI components.
 ///
-/// `OshiThemeProviding` is the foundation for the theming engine planned
-/// in the v1.1.0 milestone. It defines the color palette, typography scale,
-/// and spacing tokens that OshiUI components use for rendering.
+/// `OshiThemeProviding` is the foundation of the OshiUI theming engine.
+/// It defines the color palette, typography scale, and spacing tokens
+/// that OshiUI components use for rendering.
 ///
 /// All properties provide **default implementations** that match the current
 /// static design tokens. This ensures zero breaking changes for existing
-/// consumers while enabling theme customization in a future release.
+/// consumers while enabling full theme customization.
 ///
-/// > Note: This protocol is a **forward declaration stub**. The full
-/// > theming engine — including ``EnvironmentValues`` integration and
-/// > runtime theme switching — is planned for v1.1.0.
-///
-/// ## Future Usage (v1.1.0)
+/// ## Usage
 ///
 /// ```swift
+/// // 1. Define a custom theme
 /// struct CyberTheme: OshiThemeProviding {
 ///     var neonCyan: Color { Color(hue: 0.50, saturation: 0.95, brightness: 1.0) }
 ///     // Override only the tokens you want to customize.
 ///     // All other tokens fall back to the default implementation.
 /// }
+///
+/// // 2. Apply it via the environment
+/// ContentView()
+///     .oshiTheme(CyberTheme())
+///
+/// // 3. Read it in any child view
+/// @Environment(\.oshiTheme) private var theme
+/// Text("Hello").foregroundStyle(theme.neonCyan)
 /// ```
 public protocol OshiThemeProviding: Sendable {
 
@@ -136,9 +141,48 @@ extension OshiThemeProviding {
 
 /// The built-in OshiUI theme that uses the default neon cyberpunk design tokens.
 ///
-/// This is the theme used when no custom theme is provided.
+/// This is the theme used when no custom theme is provided via the environment.
 public struct OshiDefaultTheme: OshiThemeProviding {
 
     /// Creates the default OshiUI theme.
     public init() {}
+}
+
+// MARK: - Environment Integration
+
+extension EnvironmentValues {
+
+    /// The current OshiUI theme injected via the environment.
+    ///
+    /// Defaults to ``OshiDefaultTheme`` when no custom theme is set.
+    ///
+    /// ```swift
+    /// @Environment(\.oshiTheme) private var theme
+    /// Text("Title").foregroundStyle(theme.neonCyan)
+    /// ```
+    @Entry public var oshiTheme: any OshiThemeProviding = OshiDefaultTheme()
+}
+
+// MARK: - View Extension
+
+extension View {
+
+    /// Sets the OshiUI theme for this view and its descendants.
+    ///
+    /// Child views can read the theme via `@Environment(\.oshiTheme)`.
+    /// Nested `.oshiTheme()` calls override parent themes, following
+    /// standard SwiftUI environment propagation rules.
+    ///
+    /// ```swift
+    /// NavigationStack {
+    ///     ContentView()
+    /// }
+    /// .oshiTheme(CyberTheme())
+    /// ```
+    ///
+    /// - Parameter theme: The theme to apply.
+    /// - Returns: A view with the specified theme in the environment.
+    public func oshiTheme(_ theme: some OshiThemeProviding) -> some View {
+        environment(\.oshiTheme, theme)
+    }
 }
