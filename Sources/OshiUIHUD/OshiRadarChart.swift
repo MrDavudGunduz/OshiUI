@@ -189,6 +189,15 @@ public struct OshiRadarChart: View {
                 }
             }
         }
+        .onChange(of: data) { _, newData in
+            if reduceMotion {
+                animatedData = newData
+            } else {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                    animatedData = newData
+                }
+            }
+        }
         .accessibilityElement()
         .accessibilityLabel("Radar chart with \(axes.count) axes")
         .accessibilityValue(accessibilityDescription)
