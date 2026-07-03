@@ -135,6 +135,15 @@ public struct OshiLayeredCard<Content: View>: View {
     @Environment(\.accessibilityReduceMotion)
     private var reduceMotion
 
+    @Environment(\.oshiReducedEffects)
+    private var reducedEffects
+
+    /// The effective depth level — automatically downgrades to `.lightweight`
+    /// when ``EnvironmentValues/oshiReducedEffects`` is `true`.
+    private var resolvedDepth: OshiCardDepthLevel {
+        reducedEffects ? .lightweight : depth
+    }
+
     /// Creates a layered 3D card.
     ///
     /// - Parameters:
@@ -212,9 +221,9 @@ public struct OshiLayeredCard<Content: View>: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium))
             .shadow(
-                color: .black.opacity(depth.shadowOpacity),
-                radius: depth.shadowRadius,
-                y: depth.shadowOffset
+                color: .black.opacity(resolvedDepth.shadowOpacity),
+                radius: resolvedDepth.shadowRadius,
+                y: resolvedDepth.shadowOffset
             )
             .shadow(
                 color: .black.opacity(0.08),
