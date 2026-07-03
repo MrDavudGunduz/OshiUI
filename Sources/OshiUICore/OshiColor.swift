@@ -92,6 +92,87 @@ public enum OshiColor: Sendable {
     /// Tertiary text — metadata and hints.
     public static let textTertiary = Color.white.opacity(0.35)
 
+    // MARK: - Adaptive Surface Colors
+
+    /// Color-scheme-adaptive deep background.
+    ///
+    /// Uses the standard ``surfaceDeep`` in dark mode and a light
+    /// neutral surface in light mode. Prefer this over ``surfaceDeep``
+    /// when your interface supports both appearances.
+    public static let adaptiveSurfaceDeep = adaptiveColor(
+        light: Color(hue: 0.67, saturation: 0.03, brightness: 0.96),
+        dark: surfaceDeep
+    )
+
+    /// Color-scheme-adaptive elevated surface.
+    ///
+    /// Uses the standard ``surfaceElevated`` in dark mode and a
+    /// light elevated variant in light mode.
+    public static let adaptiveSurfaceElevated = adaptiveColor(
+        light: Color(hue: 0.67, saturation: 0.02, brightness: 0.92),
+        dark: surfaceElevated
+    )
+
+    /// Color-scheme-adaptive floating surface.
+    ///
+    /// Uses the standard ``surfaceFloating`` in dark mode and a
+    /// light floating variant in light mode.
+    public static let adaptiveSurfaceFloating = adaptiveColor(
+        light: Color(hue: 0.67, saturation: 0.02, brightness: 0.88),
+        dark: surfaceFloating
+    )
+
+    // MARK: - Adaptive Text Colors
+
+    /// Color-scheme-adaptive primary text.
+    public static let adaptiveTextPrimary = adaptiveColor(
+        light: Color.black.opacity(0.88),
+        dark: textPrimary
+    )
+
+    /// Color-scheme-adaptive secondary text.
+    public static let adaptiveTextSecondary = adaptiveColor(
+        light: Color.black.opacity(0.55),
+        dark: textSecondary
+    )
+
+    /// Color-scheme-adaptive tertiary text.
+    public static let adaptiveTextTertiary = adaptiveColor(
+        light: Color.black.opacity(0.30),
+        dark: textTertiary
+    )
+
+    // MARK: - Adaptive Color Factory
+
+    /// Creates a color that adapts to the current color scheme.
+    ///
+    /// On iOS/visionOS uses `UIColor` dynamic provider; on macOS uses
+    /// `NSColor` appearance resolution. Falls back to the dark variant
+    /// on unsupported platforms.
+    ///
+    /// - Parameters:
+    ///   - light: The color used in light appearance.
+    ///   - dark: The color used in dark appearance.
+    /// - Returns: A `Color` that resolves dynamically based on the system appearance.
+    private static func adaptiveColor(light: Color, dark: Color) -> Color {
+        #if canImport(UIKit)
+        Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(dark)
+                : UIColor(light)
+        })
+        #elseif canImport(AppKit)
+        Color(NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                ? NSColor(dark)
+                : NSColor(light)
+        })
+        #else
+        dark
+        #endif
+    }
+
+
     // MARK: - Gradient Factories
 
     /// Creates a diagonal linear gradient between two colors.
