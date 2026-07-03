@@ -28,7 +28,7 @@ public struct OshiChatView: View {
 
     @State private var inputText = ""
     @State private var isSending = false
-    @State private var sendTask: Task<Void, Never>?
+    @State private var pendingSend: PendingSend?
 
     /// Creates a chat view.
     ///
@@ -68,9 +68,14 @@ public struct OshiChatView: View {
             // Input bar
             inputBar
         }
-        .onDisappear {
-            sendTask?.cancel()
-            sendTask = nil
+        .task(id: pendingSend?.id) {
+            guard let send = pendingSend else { return }
+            defer {
+                if !Task.isCancelled {
+                    isSending = false
+                }
+            }
+            await onSend(send.text)
         }
     }
 
@@ -207,19 +212,23 @@ public struct OshiChatView: View {
         inputText = ""
         isSending = true
         OshiHapticEngine.impact(.light)
+        pendingSend = PendingSend(text: trimmed)
+    }
+}
 
-        sendTask?.cancel()
-        sendTask = Task {
-            defer {
-                // Only reset isSending if this task was not cancelled.
-                // Prevents a cancelled task from clearing the flag after
-                // a new task has already set it to true.
-                if !Task.isCancelled {
-                    isSending = false
-                }
-            }
-            await onSend(trimmed)
-        }
+// MARK: - Pending Send
+
+/// An identifiable value that drives the `task(id:)` lifecycle
+/// for message sending in ``OshiChatView``.
+///
+/// Each new `PendingSend` instance generates a unique `id`,
+/// causing SwiftUI to cancel the previous task and start a new one.
+private struct PendingSend: Equatable {
+    let id = UUID()
+    let text: String
+
+    static func == (lhs: PendingSend, rhs: PendingSend) -> Bool {
+        lhs.id == rhs.id
     }
 }
 

@@ -252,3 +252,52 @@ struct OshiStreamingTextEdgeCaseTests {
         _ = text.body
     }
 }
+
+// MARK: - Chat Message Conformance
+
+@Suite("OshiUISynapse — Chat Message Conformance")
+struct OshiChatMessageConformanceTests {
+
+    @Test("OshiChatMessage conforms to Equatable")
+    func equatableConformance() {
+        let id = UUID()
+        let a = OshiChatMessage(id: id, role: .user, content: "Hello")
+        let b = OshiChatMessage(id: id, role: .user, content: "Hello")
+        #expect(a == b, "Messages with same id, role, and content should be equal")
+    }
+
+    @Test("OshiChatMessage conforms to Hashable")
+    func hashableConformance() {
+        let id = UUID()
+        let a = OshiChatMessage(id: id, role: .user, content: "Hello")
+        let b = OshiChatMessage(id: id, role: .user, content: "Hello")
+        #expect(a.hashValue == b.hashValue, "Equal messages should have same hash value")
+    }
+
+    @Test("Messages can be stored in a Set")
+    func setStorage() {
+        let a = OshiChatMessage(role: .user, content: "Hello")
+        let b = OshiChatMessage(role: .assistant, content: "Hi")
+        let set: Set<OshiChatMessage> = [a, b]
+        #expect(set.count == 2)
+    }
+
+    @Test("OshiChatMessage is Sendable")
+    func sendableConformance() {
+        let msg: any Sendable = OshiChatMessage(role: .user, content: "test")
+        #expect(msg is OshiChatMessage)
+    }
+
+    @Test("Role raw values are unique and non-empty")
+    func roleRawValues() {
+        let rawValues = [
+            OshiChatMessage.Role.user.rawValue,
+            OshiChatMessage.Role.assistant.rawValue,
+            OshiChatMessage.Role.system.rawValue
+        ]
+        #expect(Set(rawValues).count == 3, "All role raw values must be unique")
+        for raw in rawValues {
+            #expect(!raw.isEmpty, "Role raw value must not be empty")
+        }
+    }
+}
