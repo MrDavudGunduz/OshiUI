@@ -131,17 +131,25 @@ public struct OshiToastConfiguration: Sendable, Equatable {
 
 /// A view modifier that presents a toast notification overlay.
 ///
-/// This type is intentionally **internal** — consumers should use the
-/// ``SwiftUICore/View/oshiToast(isPresented:configuration:content:)``
-/// convenience modifier rather than composing this modifier directly.
-/// Keeping the modifier internal allows future API evolution (e.g.
-/// adding Reduce Motion support to the slide-in transition) without
-/// breaking the public surface.
-struct OshiToastModifier<ToastContent: View>: ViewModifier {
+/// For typical usage, prefer the convenience modifier
+/// ``SwiftUICore/View/oshiToast(isPresented:configuration:content:)``.
+/// Use this type directly only when you need custom composition
+/// or need to store the modifier as a value.
+///
+/// ```swift
+/// // Convenience (preferred)
+/// content.oshiToast(isPresented: $show) { OshiToast("Done") }
+///
+/// // Direct modifier (advanced)
+/// content.modifier(OshiToastModifier(isPresented: $show, configuration: .default) {
+///     OshiToast("Done")
+/// })
+/// ```
+public struct OshiToastModifier<ToastContent: View>: ViewModifier {
 
-    @Binding var isPresented: Bool
-    let configuration: OshiToastConfiguration
-    @ViewBuilder let toastContent: () -> ToastContent
+    @Binding public var isPresented: Bool
+    public let configuration: OshiToastConfiguration
+    @ViewBuilder public let toastContent: () -> ToastContent
 
     @Environment(\.accessibilityReduceMotion)
     private var reduceMotion
@@ -169,7 +177,7 @@ struct OshiToastModifier<ToastContent: View>: ViewModifier {
             : OshiSpringPreset.snappy.animation
     }
 
-    func body(content: Content) -> some View {
+    public func body(content: Content) -> some View {
         content
             .overlay(alignment: alignment) {
                 if isPresented {
