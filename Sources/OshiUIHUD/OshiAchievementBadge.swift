@@ -86,7 +86,7 @@ public struct OshiAchievementBadge: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            : AnyShapeStyle(OshiColor.surfaceElevated)
+                            : AnyShapeStyle(OshiColor.adaptiveSurfaceElevated)
                     )
                     .frame(width: 64, height: 64)
 
@@ -96,7 +96,7 @@ public struct OshiAchievementBadge: View {
                         LinearGradient(
                             colors: isUnlocked
                                 ? [tier.color.opacity(0.8), tier.color.opacity(0.3)]
-                                : [OshiColor.textTertiary.opacity(0.3), OshiColor.textTertiary.opacity(0.1)],
+                                : [OshiColor.adaptiveTextTertiary.opacity(0.3), OshiColor.adaptiveTextTertiary.opacity(0.1)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
@@ -107,7 +107,7 @@ public struct OshiAchievementBadge: View {
                 // Icon with subtle shadow
                 Image(systemName: tier.icon)
                     .font(.title2)
-                    .foregroundStyle(isUnlocked ? tier.color : OshiColor.textTertiary)
+                    .foregroundStyle(isUnlocked ? tier.color : OshiColor.adaptiveTextTertiary)
                     .shadow(color: isUnlocked ? tier.color.opacity(0.4) : .clear, radius: 4)
             }
             .shadow(
@@ -127,11 +127,11 @@ public struct OshiAchievementBadge: View {
             VStack(spacing: 2) {
                 Text(title)
                     .font(OshiTypography.caption)
-                    .foregroundStyle(isUnlocked ? OshiColor.textPrimary : OshiColor.textTertiary)
+                    .foregroundStyle(isUnlocked ? OshiColor.adaptiveTextPrimary : OshiColor.adaptiveTextTertiary)
                 Text(tier.rawValue.uppercased())
                     .font(.system(size: 9, weight: .semibold, design: .monospaced))
                     .tracking(1.5)
-                    .foregroundStyle(isUnlocked ? tier.color.opacity(0.6) : OshiColor.textTertiary.opacity(0.5))
+                    .foregroundStyle(isUnlocked ? tier.color.opacity(0.6) : OshiColor.adaptiveTextTertiary.opacity(0.5))
             }
         }
         .accessibilityElement(children: .combine)
@@ -185,5 +185,5 @@ public enum OshiAchievementTier: String, Sendable, CaseIterable {
         OshiAchievementBadge(title: "Legendary", tier: .platinum, isUnlocked: false)
     }
     .padding(32)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

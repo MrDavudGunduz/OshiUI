@@ -89,13 +89,13 @@ public struct OshiChatView: View {
             TextField("Message…", text: $inputText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(OshiTypography.body)
-                .foregroundStyle(OshiColor.textPrimary)
+                .foregroundStyle(OshiColor.adaptiveTextPrimary)
                 .lineLimit(1...5)
                 .padding(.horizontal, OshiSpacing.md)
                 .padding(.vertical, OshiSpacing.sm)
                 .background(
                     RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
-                        .fill(OshiColor.surfaceElevated)
+                        .fill(OshiColor.adaptiveSurfaceElevated)
                 )
                 .accessibilityLabel("Message input")
 
@@ -106,7 +106,7 @@ public struct OshiChatView: View {
                     .font(.title2)
                     .foregroundStyle(
                         trimmed.isEmpty
-                        ? OshiColor.textTertiary
+                        ? OshiColor.adaptiveTextTertiary
                         : OshiColor.neonCyan
                     )
             }
@@ -115,7 +115,7 @@ public struct OshiChatView: View {
             .accessibilityHint(trimmed.isEmpty ? "Type a message first" : "Sends your message")
         }
         .padding(OshiSpacing.md)
-        .background(OshiColor.surfaceDeep)
+        .background(OshiColor.adaptiveSurfaceDeep)
     }
 
     // MARK: - Message Bubble
@@ -131,7 +131,7 @@ public struct OshiChatView: View {
             ) {
                 Text(message.content)
                     .font(OshiTypography.body)
-                    .foregroundStyle(OshiColor.textPrimary)
+                    .foregroundStyle(OshiColor.adaptiveTextPrimary)
                     .textSelection(.enabled)
                     .padding(.horizontal, OshiSpacing.lg)
                     .padding(.vertical, OshiSpacing.md)
@@ -149,7 +149,7 @@ public struct OshiChatView: View {
                                         endPoint: .bottomTrailing
                                     )
                                 )
-                                : AnyShapeStyle(OshiColor.surfaceElevated)
+                                : AnyShapeStyle(OshiColor.adaptiveSurfaceElevated)
                             )
                     )
                     .overlay(
@@ -296,5 +296,5 @@ public struct OshiChatMessage: Identifiable, Sendable, Equatable, Hashable {
         ]
     ) { _ in }
     .frame(height: 500)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

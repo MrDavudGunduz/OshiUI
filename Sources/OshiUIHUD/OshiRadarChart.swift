@@ -295,7 +295,7 @@ extension View {
     )
     .frame(width: 280, height: 280)
     .padding()
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }
 
 #Preview("Radar Chart — Performance Metrics") {
@@ -306,5 +306,5 @@ extension View {
     )
     .frame(width: 280, height: 280)
     .padding()
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

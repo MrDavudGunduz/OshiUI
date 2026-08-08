@@ -166,18 +166,18 @@ extension EnvironmentValues {
 #Preview("Streaming Text — Pulse Cursor") {
     OshiStreamingText(text: "The neural pathways are computing your request…")
         .padding()
-        .background(OshiColor.surfaceDeep)
+        .background(OshiColor.adaptiveSurfaceDeep)
 }
 
 #Preview("Streaming Text — Block Cursor") {
     OshiStreamingText(text: "Processing tokens at 120 t/s")
         .oshiStreamCursor(.block)
         .padding()
-        .background(OshiColor.surfaceDeep)
+        .background(OshiColor.adaptiveSurfaceDeep)
 }
 
 #Preview("Streaming Text — No Cursor") {
     OshiStreamingText(text: "Complete response rendered.", showCursor: false)
         .padding()
-        .background(OshiColor.surfaceDeep)
+        .background(OshiColor.adaptiveSurfaceDeep)
 }

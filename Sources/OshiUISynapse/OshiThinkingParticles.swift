@@ -199,7 +199,7 @@ public enum OshiThinkingStyle: String, Sendable, CaseIterable {
                 .frame(width: 60, height: 60)
             Text("Neural")
                 .font(OshiTypography.caption)
-                .foregroundStyle(OshiColor.textSecondary)
+                .foregroundStyle(OshiColor.adaptiveTextSecondary)
         }
 
         VStack {
@@ -207,7 +207,7 @@ public enum OshiThinkingStyle: String, Sendable, CaseIterable {
                 .frame(width: 60, height: 60)
             Text("Pulse")
                 .font(OshiTypography.caption)
-                .foregroundStyle(OshiColor.textSecondary)
+                .foregroundStyle(OshiColor.adaptiveTextSecondary)
         }
 
         VStack {
@@ -215,10 +215,10 @@ public enum OshiThinkingStyle: String, Sendable, CaseIterable {
                 .frame(width: 60, height: 60)
             Text("Spiral")
                 .font(OshiTypography.caption)
-                .foregroundStyle(OshiColor.textSecondary)
+                .foregroundStyle(OshiColor.adaptiveTextSecondary)
         }
     }
     .padding(40)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }
 

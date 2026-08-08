@@ -85,8 +85,8 @@ public struct OshiResizableWidget<Content: View>: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            OshiColor.surfaceElevated,
-                            OshiColor.surfaceElevated.opacity(0.95)
+                            OshiColor.adaptiveSurfaceElevated,
+                            OshiColor.adaptiveSurfaceElevated.opacity(0.95)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
@@ -236,5 +236,5 @@ private struct ResizeHandleDot: Identifiable {
         }
     }
     .padding()
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

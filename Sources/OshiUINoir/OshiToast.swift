@@ -66,7 +66,7 @@ public struct OshiToast: View {
 
             Text(message)
                 .font(OshiTypography.callout)
-                .foregroundStyle(OshiColor.textPrimary)
+                .foregroundStyle(OshiColor.adaptiveTextPrimary)
         }
         .padding(.horizontal, OshiSpacing.xl)
         .padding(.vertical, OshiSpacing.md)
@@ -75,7 +75,7 @@ public struct OshiToast: View {
                 .fill(.ultraThinMaterial)
                 .overlay(
                     Capsule()
-                        .fill(OshiColor.surfaceElevated.opacity(0.7))
+                        .fill(OshiColor.adaptiveSurfaceElevated.opacity(0.7))
                 )
         )
         .overlay(
@@ -147,9 +147,9 @@ public struct OshiToastConfiguration: Sendable, Equatable {
 /// ```
 public struct OshiToastModifier<ToastContent: View>: ViewModifier {
 
-    @Binding public var isPresented: Bool
-    public let configuration: OshiToastConfiguration
-    @ViewBuilder public let toastContent: () -> ToastContent
+    @Binding var isPresented: Bool
+    let configuration: OshiToastConfiguration
+    @ViewBuilder let toastContent: () -> ToastContent
 
     @Environment(\.accessibilityReduceMotion)
     private var reduceMotion
@@ -255,5 +255,5 @@ extension View {
     }
     .padding(40)
     .frame(maxWidth: .infinity)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

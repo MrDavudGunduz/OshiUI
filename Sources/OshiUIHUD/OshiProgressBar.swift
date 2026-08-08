@@ -68,7 +68,7 @@ public struct OshiProgressBar: View {
             ZStack(alignment: .leading) {
                 // Track — with inner shadow for depth
                 Capsule()
-                    .fill(OshiColor.surfaceElevated)
+                    .fill(OshiColor.adaptiveSurfaceElevated)
                     .overlay(
                         Capsule()
                             .fill(
@@ -212,5 +212,5 @@ extension View {
         }
     }
     .padding(24)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

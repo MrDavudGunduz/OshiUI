@@ -164,5 +164,5 @@ extension ButtonStyle where Self == KineticImpactButtonStyle {
             .buttonStyle(.oshiKineticImpact(accentColor: OshiColor.neonLime))
     }
     .padding(40)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

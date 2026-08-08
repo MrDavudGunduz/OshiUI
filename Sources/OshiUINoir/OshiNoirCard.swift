@@ -47,11 +47,11 @@ public struct OshiNoirCard<Content: View>: View {
             .padding(OshiSpacing.lg)
             .background(
                 RoundedRectangle(cornerRadius: OshiSpacing.xs)
-                    .fill(OshiColor.surfaceDeep)
+                    .fill(OshiColor.adaptiveSurfaceDeep)
                     .overlay(
                         // Scan-line effect — dense horizontal stripes
                         RoundedRectangle(cornerRadius: OshiSpacing.xs)
-                            .fill(scanLinePattern)
+                            .fill(Self.scanLinePattern)
                     )
                     .overlay(
                         // Inner glow — radial accent tint
@@ -121,23 +121,35 @@ public struct OshiNoirCard<Content: View>: View {
             .accessibilityElement(children: .contain)
     }
 
-    private var scanLinePattern: some ShapeStyle {
-        LinearGradient(
-            stops: [
-                .init(color: .white.opacity(0.025), location: 0.0),
-                .init(color: .clear, location: 0.02),
-                .init(color: .white.opacity(0.015), location: 0.04),
-                .init(color: .clear, location: 0.06),
-                .init(color: .white.opacity(0.02), location: 0.08),
-                .init(color: .clear, location: 0.10),
-                .init(color: .white.opacity(0.015), location: 0.50),
-                .init(color: .clear, location: 0.52),
-                .init(color: .white.opacity(0.02), location: 1.0)
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+    /// Cached scan-line gradient pattern — computed once and reused across
+    /// all `OshiNoirCard` instances to avoid per-render gradient allocation.
+    private static var scanLinePattern: LinearGradient {
+        NoirCardConstants.scanLinePattern
     }
+}
+
+// MARK: - Constants
+
+/// Module-level constant cache for ``OshiNoirCard``.
+///
+/// Static stored properties are not supported in generic types,
+/// so the scan-line pattern is cached here as a caseless enum namespace.
+private enum NoirCardConstants {
+    static let scanLinePattern = LinearGradient(
+        stops: [
+            .init(color: .white.opacity(0.025), location: 0.0),
+            .init(color: .clear, location: 0.02),
+            .init(color: .white.opacity(0.015), location: 0.04),
+            .init(color: .clear, location: 0.06),
+            .init(color: .white.opacity(0.02), location: 0.08),
+            .init(color: .clear, location: 0.10),
+            .init(color: .white.opacity(0.015), location: 0.50),
+            .init(color: .clear, location: 0.52),
+            .init(color: .white.opacity(0.02), location: 1.0)
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+    )
 }
 
 // MARK: - Noir Divider
@@ -225,7 +237,7 @@ extension View {
                 OshiNoirDivider()
                 Text("All subsystems operational")
                     .font(OshiTypography.caption)
-                    .foregroundStyle(OshiColor.textSecondary)
+                    .foregroundStyle(OshiColor.adaptiveTextSecondary)
             }
         }
 
@@ -240,5 +252,5 @@ extension View {
         }
     }
     .padding(24)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

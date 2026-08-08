@@ -170,6 +170,6 @@ public struct OshiMorphView<Compact: View, Expanded: View>: View {
         .clipShape(RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium))
     }
     .padding()
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }
 

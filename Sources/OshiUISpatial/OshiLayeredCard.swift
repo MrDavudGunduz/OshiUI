@@ -164,7 +164,7 @@ public struct OshiLayeredCard<Content: View>: View {
         content()
             .background(
                 RoundedRectangle(cornerRadius: OshiSpacing.radiusMedium)
-                    .fill(OshiColor.surfaceElevated)
+                    .fill(OshiColor.adaptiveSurfaceElevated)
             )
             .overlay(
                 // Border — gradient that intensifies on hover
@@ -290,5 +290,5 @@ extension OshiLayeredCard {
         }
     }
     .padding(40)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

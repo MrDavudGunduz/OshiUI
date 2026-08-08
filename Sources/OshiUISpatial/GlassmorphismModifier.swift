@@ -69,7 +69,7 @@ public struct GlassmorphismModifier: ViewModifier {
             .background {
                 if reduceTransparency {
                     RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(OshiColor.surfaceElevated)
+                        .fill(OshiColor.adaptiveSurfaceElevated)
                 } else {
                     RoundedRectangle(cornerRadius: cornerRadius)
                         .fill(.ultraThinMaterial)

@@ -96,6 +96,7 @@ let package = Package(
         .testTarget(name: "OshiUIHolographicTests", dependencies: ["OshiUIHolographic"]),
         .testTarget(name: "OshiUISynapseTests",     dependencies: ["OshiUISynapse"]),
         .testTarget(name: "OshiUICanvasTests",      dependencies: ["OshiUICanvas"]),
+        .testTarget(name: "OshiUITests",             dependencies: ["OshiUI"]),
     ],
     swiftLanguageModes: [.v6]
 )

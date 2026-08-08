@@ -119,5 +119,5 @@ private struct PreviewGridCell: Identifiable {
                 )
         }
     }
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

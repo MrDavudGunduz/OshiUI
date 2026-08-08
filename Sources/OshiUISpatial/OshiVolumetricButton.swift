@@ -177,7 +177,7 @@ public struct OshiVolumetricButton: View {
         OshiVolumetricButton("Accept", color: OshiColor.neonLime) { }
     }
     .padding(40)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }
 
 #Preview("Volumetric ButtonStyle") {
@@ -192,5 +192,5 @@ public struct OshiVolumetricButton: View {
         .buttonStyle(.oshiVolumetric(color: OshiColor.neonViolet))
     }
     .padding(40)
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }

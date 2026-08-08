@@ -96,7 +96,7 @@ public struct OshiHolographicCanvas<Content: View>: View {
             ZStack {
                 // Background glow layer
                 RoundedRectangle(cornerRadius: OshiSpacing.radiusLarge)
-                    .fill(OshiColor.surfaceDeep)
+                    .fill(OshiColor.adaptiveSurfaceDeep)
                     .overlay(
                         RoundedRectangle(cornerRadius: OshiSpacing.radiusLarge)
                             .fill(
@@ -255,7 +255,7 @@ public struct OshiVolumetricPanel<Content: View>: View {
     }
     .frame(width: 300, height: 300)
     .padding()
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }
 
 #Preview("Volumetric Panel") {
@@ -275,5 +275,5 @@ public struct OshiVolumetricPanel<Content: View>: View {
         }
     }
     .padding()
-    .background(OshiColor.surfaceDeep)
+    .background(OshiColor.adaptiveSurfaceDeep)
 }
